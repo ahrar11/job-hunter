@@ -1,6 +1,0 @@
-requests==2.31.0
-python-dotenv==1.0.0
-
-# Note: Node.js is required for resume .docx generation.
-# Install the docx package once with: npm install -g docx
-# GitHub Actions Ubuntu runners have Node.js pre-installed.
