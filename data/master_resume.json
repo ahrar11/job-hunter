@@ -1,0 +1,100 @@
+{
+  "_meta": {
+    "last_updated": "2026-03-30",
+    "note": "This is the structured master resume used by the resume tailor. Update this file whenever you update your resume PDF."
+  },
+  "personal": {
+    "name": "Ahrar Karim",
+    "location": "Boston, MA",
+    "phone": "617-858-9199",
+    "email": "ahrar@bu.edu",
+    "linkedin": "linkedin.com/in/ahrarkarim",
+    "github": "github.com/ahrarkarim"
+  },
+  "education": [
+    {
+      "degree": "M.S. in Business Analytics",
+      "school": "Boston University, Questrom School of Business",
+      "location": "Boston, MA",
+      "graduation": "January 2027",
+      "relevant_coursework": []
+    },
+    {
+      "degree": "B.Tech in Computer Science and Engineering",
+      "school": "VIT University (Vellore Institute of Technology)",
+      "location": "Vellore, India",
+      "graduation": "June 2024"
+    }
+  ],
+  "skills": {
+    "data_visualization": ["Tableau", "Microsoft Power BI", "Fusion Data Intelligence (FDI)", "DAX", "Excel"],
+    "programming": ["Python", "NumPy", "Pandas", "Matplotlib", "Seaborn", "Scikit-learn", "HTML", "CSS", "JavaScript", "SQL"],
+    "tools_and_methods": ["GCP BigQuery", "RAG", "Power Automate", "Power Query", "Prompt Engineering", "A/B Testing"]
+  },
+  "projects": [
+    {
+      "id": "nyc_crime",
+      "title": "Analysis of Crime and EMS Response Patterns in New York City",
+      "date": "October 2025",
+      "tags": ["data analysis", "python", "geospatial", "visualization", "project management", "pandas", "matplotlib", "seaborn", "public safety", "stakeholder"],
+      "bullets": [
+        "Led a 5-member multidisciplinary team as Project Manager, achieving a 99% evaluation score for delivering data-backed insights into New York City's public safety trends; delivered actionable recommendations for resource reallocation and response optimization by presenting 15+ visualizations with Matplotlib and Seaborn.",
+        "Cleaned, merged, and standardized over 29k shooting, 11k emergency, and 143k arrest records using Pandas and NumPy, enabling borough-level statistical and geospatial analyses to identify crime hotspots and uncover underlying patterns for stakeholder recommendation using over 185,000 entries from NYPD, EMS, and 911 data."
+      ]
+    },
+    {
+      "id": "olist_ecommerce",
+      "title": "Early Momentum Forecasting on Olist e-commerce Marketplace",
+      "date": "December 2025",
+      "tags": ["machine learning", "forecasting", "e-commerce", "python", "scikit-learn", "business strategy", "operations", "power automate", "power query", "DAX", "go-to-market"],
+      "bullets": [
+        "Built 5 predictive ML models on 113k transactions to identify top 10% bestsellers within 7–14 days; engineered 9 features, achieved strong ROC-AUC and balanced accuracy using stratified k-fold cross-validation.",
+        "Segmented product trajectories into 'Trending/Front-Loaded' vs. 'Late-Bloomer' patterns and validated business hypothesis by revealing an 80/20 Pareto distribution, translating model predictions into actionable go-to-market strategies for marketing and operations teams.",
+        "Embedded a Power Automate Teams alert workflow into the report built using Power Query and DAX to track late orders and regional fulfillment performance, enabling faster identification of operational bottlenecks."
+      ]
+    },
+    {
+      "id": "spotify",
+      "title": "Spotify Music Streaming Analysis",
+      "date": "November 2025",
+      "tags": ["SQL", "BigQuery", "GCP", "Tableau", "EDA", "data pipeline", "dashboard", "content strategy", "marketing", "regional analytics"],
+      "bullets": [
+        "Created a complete data pipeline using BigQuery and SQL to merge two datasets of around 1 million tracks; performed EDA identifying key popularity drivers across 50+ regions, generating 18+ data-backed insights.",
+        "Designed 2 interactive Tableau dashboards translating multi-dimensional analysis into actionable visualizations (popularity trends, regional streaming patterns, chart longevity dynamics, explicit content trade-offs), enabling content strategists and A&R teams to optimize release timing, playlist positioning, and regional marketing."
+      ]
+    },
+    {
+      "id": "healthcare_chatbot",
+      "title": "Trustworthy AI in Healthcare: A Hospital/Pharmacy Supply-Chain Chatbot",
+      "date": "January 2026",
+      "tags": ["AI", "LLM", "RAG", "NLP", "healthcare", "supply chain", "chatbot", "python", "prompt engineering", "evaluation", "safety"],
+      "bullets": [
+        "Led development of a chatbot that unified 6,383 guideline chunks from FDA Orange Book, ASHP guidelines, RxNorm API, and 200k+ inventory lots across 80 locations into a single conversational interface, reducing manual query resolution time from 15 minutes to under 10 seconds.",
+        "Evaluated 3 production-style modes (retrieval-only, RAG, and LLM-only) over 180 adversarial and ambiguity stress test runs across 30 prompts and multiple temperatures while instrumenting safety guardrails for inventory, drug substitution, and cost queries for frontline clinical users."
+      ]
+    }
+  ],
+  "experience": [
+    {
+      "id": "mavq",
+      "title": "Software Analyst Engineer",
+      "company": "mavQ",
+      "dates": "January 2024 – November 2024",
+      "tags": ["angular", "frontend", "testing", "QA", "debugging", "SLA", "client", "ML", "data annotation", "production"],
+      "bullets": [
+        "Developed 9+ interactive webpages using Angular, ensuring alignment with client specifications and project timelines; collaborated with QA team to perform comprehensive UI/UX testing, resolving 45+ inconsistencies by implementing critical debugging within 24-hour SLA to enhance product quality and client satisfaction by 35%.",
+        "Engineered production-grade test data with 1,000+ annotated samples and implemented validation protocols establishing accuracy benchmarks; guided model selection and accelerated time-to-production by 2 weeks."
+      ]
+    },
+    {
+      "id": "grad_assistant",
+      "title": "Graduate Assistant",
+      "company": "MSBA Industry Relations, Boston University",
+      "dates": "Current",
+      "tags": ["data cleaning", "dashboard", "ETL", "Excel", "student relations", "industry", "data transformation"],
+      "bullets": [
+        "Identified and compiled opportunities tailored to student profiles and coordinated logistics for the NYC Trek by extracting, cleaning, and transforming 3 years of industry contact data to build dashboards displayed on industry-facing websites, supporting seamless engagement between 110+ students and company partners."
+      ]
+    }
+  ]
+}

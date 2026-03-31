@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+.DS_Store
+resumes/*.docx
+data/run_log.txt
+*.egg-info/
+.venv/
+venv/
