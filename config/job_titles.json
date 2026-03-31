@@ -1,0 +1,15 @@
+{
+  "titles": [
+    "Business Analyst Intern",
+    "Data Analyst Intern",
+    "Operations Analyst Intern",
+    "Strategy Intern",
+    "Data Science Intern",
+    "Business Intelligence Intern",
+    "Marketing Analyst Intern"
+  ],
+  "_notes": {
+    "add_remove": "Add or remove titles here. The fetcher uses these to filter ATS results and build search queries.",
+    "learning_loop": "Module 6 will auto-boost titles you apply to most often."
+  }
+}
