@@ -280,7 +280,7 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
         "num_pages": "2",
         # FIXED: was "today" → returned 0 results every run.
         # "month" casts a wide net; seen_jobs.json prevents re-showing old roles.
-        "date_posted": "week",
+        "date_posted": "month",
     }
     # NOTE: removed employment_types="INTERN" — that filter is too strict
     # and excludes valid postings classified as "contract" or "other".
@@ -295,8 +295,9 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
 
     jobs = []
     for job in data.get("data", []):
-        title       = job.get("job_title", "")
-        description = job.get("job_description", "")
+        title       = job.get("job_title")       or ""
+        description = job.get("job_description")  or ""
+        employer    = job.get("employer_name")     or ""
 
         if not is_intern_role(title, description):
             continue
@@ -359,7 +360,7 @@ def fetch_adzuna(query: str, app_id: str, app_key: str) -> List[Dict]:
         "app_key":         app_key,
         "what":            query,
         # FIXED: was max_days_old=1 → zero results every run
-        "max_days_old":    7,
+        "max_days_old":    30,
         "results_per_page": 20,
         "sort_by":         "date",
         "content-type":    "application/json",

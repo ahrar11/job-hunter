@@ -318,11 +318,11 @@ class EmailDigest:
             (j["company"] for j in sorted(top_jobs,
              key=lambda x: x.get("relevance_score", 0), reverse=True)), ""
         )
-        subject = (
-            f"{self.prefix} {len(top_jobs)} new internships"
-            f"{f' · {stats[\"connected\"]} connections' if stats['connected'] else ''}"
-            f"{f' · Top: {top_company}' if top_company else ''}"
-        )
+        # Build subject without backslashes inside f-strings (Python <3.12 limitation)
+        conn_count = stats['connected']
+        conn_str = f" · {conn_count} connections" if conn_count else ""
+        top_str  = f" · Top: {top_company}"       if top_company  else ""
+        subject  = f"{self.prefix} {len(top_jobs)} new internships{conn_str}{top_str}"
 
         ok = self.send_via_resend(html, subject)
 
