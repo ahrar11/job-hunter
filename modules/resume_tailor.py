@@ -135,11 +135,14 @@ def generate_docx(tailored_data: Dict, personal: Dict, education: List, output_p
         logger.error(f"generate_resume.js not found at {GENERATE_SCRIPT}")
         return False
 
+    import os as _os
+    abs_output = _os.path.abspath(output_path)
+
     payload = {
         "personal": personal,
         "education": education,
         "tailored": tailored_data,
-        "output_path": output_path,
+        "output_path": abs_output,    # absolute path so Node writes to right place
     }
 
     payload_str = json.dumps(payload)

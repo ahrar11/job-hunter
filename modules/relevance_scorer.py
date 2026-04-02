@@ -1,14 +1,8 @@
 """
 Module 2: Relevance Scorer
 ──────────────────────────────────────────────────────────────
-Reads:   data/raw_jobs.json
-Reads:   data/master_resume.json
-Reads:   data/feedback_history.json
-
-BATCH SCORING: sends all jobs to Gemini in ONE API call instead
-of one call per job. Reduces runtime from ~40min to ~30 seconds.
-
-Writes:  data/top_jobs.json
+Scores jobs in chunks of 10 — each chunk = 1 Gemini call.
+31 jobs = 3-4 API calls instead of 31. ~30s total instead of 40min.
 ──────────────────────────────────────────────────────────────
 """
 
@@ -18,13 +12,12 @@ import time
 from pathlib import Path
 from typing import List, Dict, Optional
 
-from modules.gemini_helper import call_gemini_json, call_gemini
+from modules.gemini_helper import call_gemini_json
 
 logger = logging.getLogger(__name__)
 
-TOP_N = 20
-
-# ── Profile builder ───────────────────────────────────────────
+TOP_N      = 20
+CHUNK_SIZE = 10   # Jobs per Gemini call — fits easily in free tier
 
 def build_profile_summary(resume: Dict) -> str:
     skills = resume.get("skills", {})
@@ -35,16 +28,14 @@ def build_profile_summary(resume: Dict) -> str:
     )
     project_titles = [p["title"] for p in resume.get("projects", [])]
     exp_titles     = [f"{e['title']} at {e['company']}" for e in resume.get("experience", [])]
-    ed  = resume.get("education", [{}])[0]
+    ed = resume.get("education", [{}])[0]
     return (
         f"Degree: {ed.get('degree','')}, {ed.get('school','')} (graduating {ed.get('graduation','')})\n"
-        f"Visa: F-1 CPT eligible — CANNOT work at roles requiring US Citizenship or Permanent Residency\n"
+        f"Visa: F-1 student on CPT — CANNOT work at roles requiring US Citizenship or Permanent Residency\n"
         f"Skills: {', '.join(all_skills)}\n"
         f"Projects: {'; '.join(project_titles)}\n"
         f"Experience: {'; '.join(exp_titles)}"
     )
-
-# ── Feedback boosts ───────────────────────────────────────────
 
 def load_feedback_boosts(path: str = "data/feedback_history.json") -> Dict:
     p = Path(path)
@@ -62,89 +53,51 @@ def load_feedback_boosts(path: str = "data/feedback_history.json") -> Dict:
         if title:   tw[title]   = tw.get(title,   0) + delta
     return {"companies": cw, "titles": tw}
 
-
 def apply_feedback_boost(score: int, job: Dict, boosts: Dict) -> int:
     boost = boosts["companies"].get(job.get("company","").lower(), 0)
-    title_key = job.get("title","").lower()
-    for known, weight in boosts["titles"].items():
-        if known in title_key or title_key in known:
-            boost += weight
-            break
+    for known, w in boosts["titles"].items():
+        if known in job.get("title","").lower():
+            boost += w; break
     return max(0, min(100, score + boost))
 
-# ── BATCH scorer — one Gemini call for all jobs ───────────────
+CHUNK_PROMPT = """
+You are scoring internship job postings for an MS Business Analytics student.
 
-BATCH_PROMPT = """
-You are a career coach scoring internship job postings for a specific candidate.
-
-CANDIDATE PROFILE:
+CANDIDATE:
 {profile}
 
-Score EACH job below from 0-100 for fit with this candidate.
-Rules:
-- Any role requiring US Citizenship or Permanent Residency → score 0
-- Strong skill match (Python, SQL, Tableau, Power BI, BigQuery, ML) → higher score
-- Business/Data/Analytics/Strategy/BI/Marketing roles → prefer over others
-- Roles at well-known tech/finance companies → slight boost
-- Roles clearly mismatched (wrong domain, wrong level) → low score
+Score EACH job 0-100. Rules:
+- Score 0 if role requires US Citizenship or Permanent Residency
+- Score 0 if role is clearly wrong domain (cybersecurity, engineering, etc.)
+- High scores (75+) for strong skill match: Python, SQL, Tableau, Power BI, BigQuery, analytics
+- Medium (50-74) for partial match or unknown company
+- Low (<50) for weak match
 
-JOBS TO SCORE (JSON array):
+JOBS:
 {jobs_json}
 
-Return ONLY a valid JSON array with exactly {n} objects in the same order:
-[
-  {{"score": <0-100>, "match_reason": "<1 sentence>", "skill_matches": ["skill1"], "concern": "<or empty>"}},
-  ...
-]
-No markdown, no explanation, just the JSON array.
+Return a JSON array of exactly {n} objects (same order):
+[{{"score":<int>,"match_reason":"<1 sentence>","skill_matches":["skill1"],"concern":"<or empty>"}}]
+JSON only, no markdown.
 """
 
-def batch_score_jobs(jobs: List[Dict], profile_summary: str) -> List[Optional[Dict]]:
-    """
-    Score all jobs in a single Gemini call.
-    Returns list of scoring dicts (same length as jobs), None entries on failure.
-    """
-    if not jobs:
-        return []
-
-    # Build compact job list for prompt (title + company + first 300 chars of description)
-    jobs_compact = [
-        {
-            "idx":         i,
-            "title":       j["title"],
-            "company":     j["company"],
-            "location":    j["location"],
-            "description": j["description"][:400],
-        }
+def score_chunk(jobs: List[Dict], profile: str) -> List[Optional[Dict]]:
+    compact = [
+        {"idx": i, "title": j["title"], "company": j["company"],
+         "location": j["location"], "description": j["description"][:350]}
         for i, j in enumerate(jobs)
     ]
-
-    prompt = BATCH_PROMPT.format(
-        profile=profile_summary,
-        jobs_json=json.dumps(jobs_compact, indent=2),
-        n=len(jobs),
+    prompt = CHUNK_PROMPT.format(
+        profile=profile,
+        jobs_json=json.dumps(compact, indent=2),
+        n=len(jobs)
     )
-
-    logger.info(f"  Sending {len(jobs)} jobs to Gemini in one batch call...")
-    result = call_gemini_json(prompt, temperature=0.1, max_tokens=4000)
-
-    if result is None:
-        logger.error("  Batch scoring failed — Gemini returned nothing")
-        return [None] * len(jobs)
-
+    result = call_gemini_json(prompt, temperature=0.1, max_tokens=2000)
     if not isinstance(result, list):
-        logger.error(f"  Batch scoring returned wrong type: {type(result)}")
         return [None] * len(jobs)
-
-    # Pad or trim to match job count
     while len(result) < len(jobs):
         result.append(None)
-
-    logger.info(f"  Batch scored {len(jobs)} jobs successfully")
     return result[:len(jobs)]
-
-
-# ── Main orchestrator ─────────────────────────────────────────
 
 class RelevanceScorer:
     def __init__(self, config_dir: str = "config"):
@@ -152,37 +105,42 @@ class RelevanceScorer:
             self.settings = json.load(f)
         with open("data/master_resume.json") as f:
             self.resume = json.load(f)
-        self.profile_summary = build_profile_summary(self.resume)
-        self.top_n = self.settings.get("search", {}).get("top_n_jobs", TOP_N)
+        self.profile = build_profile_summary(self.resume)
+        self.top_n   = self.settings.get("search", {}).get("top_n_jobs", TOP_N)
 
     def run(self) -> Dict:
         logger.info("═" * 60)
-        logger.info("RELEVANCE SCORER — batch mode (1 Gemini call total)")
+        logger.info(f"RELEVANCE SCORER — chunked ({CHUNK_SIZE} jobs/call)")
         logger.info("═" * 60)
 
         raw_path = Path("data/raw_jobs.json")
         if not raw_path.exists():
-            logger.error("data/raw_jobs.json not found — run Module 1 first")
+            logger.error("data/raw_jobs.json not found")
             return {}
 
         with open(raw_path) as f:
             raw = json.load(f)
 
-        viable_jobs: List[Dict] = raw.get("viable_jobs", [])
-        logger.info(f"Scoring {len(viable_jobs)} viable jobs...")
+        jobs: List[Dict] = raw.get("viable_jobs", [])
+        logger.info(f"Scoring {len(jobs)} jobs in chunks of {CHUNK_SIZE}...")
 
-        boosts = load_feedback_boosts()
+        boosts  = load_feedback_boosts()
+        all_scores: List[Optional[Dict]] = []
 
-        # Batch score all jobs in one call
-        scores = batch_score_jobs(viable_jobs, self.profile_summary)
+        # Process in chunks
+        chunks = [jobs[i:i+CHUNK_SIZE] for i in range(0, len(jobs), CHUNK_SIZE)]
+        for ci, chunk in enumerate(chunks, 1):
+            logger.info(f"  Chunk {ci}/{len(chunks)} ({len(chunk)} jobs)...")
+            scores = score_chunk(chunk, self.profile)
+            all_scores.extend(scores)
+            if ci < len(chunks):
+                time.sleep(5)   # Brief pause between chunks
 
+        # Merge scores back into jobs
         scored: List[Dict] = []
-        for job, scoring in zip(viable_jobs, scores):
+        for job, scoring in zip(jobs, all_scores):
             if scoring is None:
-                raw_score = 50
-                match_reason  = "Could not score (API unavailable)"
-                skill_matches = []
-                concern       = ""
+                raw_score, match_reason, skill_matches, concern = 50, "Could not score", [], ""
             else:
                 raw_score     = int(scoring.get("score", 50))
                 match_reason  = scoring.get("match_reason", "")
@@ -190,37 +148,29 @@ class RelevanceScorer:
                 concern       = scoring.get("concern", "")
 
             boosted = apply_feedback_boost(raw_score, job, boosts)
-
-            scored.append({
-                **job,
-                "relevance_score": boosted,
-                "raw_score":       raw_score,
-                "match_reason":    match_reason,
-                "skill_matches":   skill_matches,
-                "concern":         concern,
+            scored.append({**job,
+                "relevance_score": boosted, "raw_score": raw_score,
+                "match_reason": match_reason, "skill_matches": skill_matches,
+                "concern": concern,
             })
 
-        # Sort by score, take top N
         scored.sort(key=lambda j: j["relevance_score"], reverse=True)
         top_jobs = scored[:self.top_n]
 
         output = {
-            "run_date":      raw.get("run_date"),
-            "total_scored":  len(scored),
-            "top_n":         self.top_n,
-            "top_jobs":      top_jobs,
+            "run_date":       raw.get("run_date"),
+            "total_scored":   len(scored),
+            "top_n":          self.top_n,
+            "top_jobs":       top_jobs,
             "remaining_jobs": scored[self.top_n:],
         }
-
         out_path = Path("data/top_jobs.json")
         with open(out_path, "w") as f:
             json.dump(output, f, indent=2, default=str)
 
-        logger.info("\n" + "═" * 60)
-        logger.info(f"DONE — top {len(top_jobs)} jobs selected")
+        logger.info(f"\nDONE — top {len(top_jobs)} jobs selected")
         for job in top_jobs[:5]:
             logger.info(f"  [{job['relevance_score']:3d}] {job['company']} — {job['title']}")
         if len(top_jobs) > 5:
             logger.info(f"  ... and {len(top_jobs)-5} more")
-        logger.info("═" * 60)
         return output

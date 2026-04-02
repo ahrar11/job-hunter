@@ -31,10 +31,28 @@ logger = logging.getLogger(__name__)
 
 # ── Fuzzy company name normalizer ─────────────────────────────
 
+# Known aliases: maps variations → canonical name
+COMPANY_ALIASES = {
+    "jpmorgan": "jpmorgan chase",
+    "jp morgan": "jpmorgan chase",
+    "jpmorgan chase co": "jpmorgan chase",
+    "jpmorgan chase  co": "jpmorgan chase",
+    "j.p. morgan": "jpmorgan chase",
+    "bytedance": "bytedance tiktok",
+    "tiktok": "bytedance tiktok",
+    "alphabet": "google",
+    "amazon web services": "amazon",
+    "aws": "amazon",
+    "microsoft corporation": "microsoft",
+    "meta platforms": "meta",
+    "facebook": "meta",
+}
+
 def normalize_company(name: str) -> str:
     """
-    Strip common suffixes and noise so 'Google LLC' matches 'Google',
-    'Meta Platforms, Inc.' matches 'Meta', etc.
+    Strip legal suffixes and apply known aliases.
+    'JPMorgan Chase & Co.' → 'jpmorgan chase'
+    'Google LLC' → 'google'
     """
     if not name:
         return ""
@@ -42,6 +60,7 @@ def normalize_company(name: str) -> str:
 
     # Remove legal suffixes
     suffixes = [
+        r",?\s*&\s*co\.?$", r",?\s*and\s+co\.?$",
         r",?\s*inc\.?$", r",?\s*llc\.?$", r",?\s*ltd\.?$",
         r",?\s*corp\.?$", r",?\s*co\.?$", r",?\s*gmbh$",
         r",?\s*s\.?a\.?$", r",?\s*plc\.?$",
@@ -56,7 +75,9 @@ def normalize_company(name: str) -> str:
     # Normalize punctuation / whitespace
     n = re.sub(r"[^a-z0-9\s]", "", n)
     n = re.sub(r"\s+", " ", n).strip()
-    return n
+
+    # Apply known aliases
+    return COMPANY_ALIASES.get(n, n)
 
 
 def company_matches(job_company: str, conn_company: str) -> bool:

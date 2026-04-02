@@ -71,6 +71,17 @@ CPT_NEGATIVE = [
     "us citizenship required", "u.s. citizenship required",
     "must be a us citizen", "requires us citizenship",
     "citizenship is required", "only us citizens",
+    # JPMorgan-style language that explicitly excludes CPT/OPT
+    "will not provide any assistance or sign any documentation",
+    "including optional practical training",
+    "including curricular practical training",
+    "curricular practical training (cpt)",
+    "optional practical training (opt) or curricular",
+    "does not offer any type of employment-based immigration",
+    "not sponsor employment visas",
+    "unable to sponsor",
+    "cannot sponsor",
+    "not able to sponsor",
 ]
 
 # Title must contain one of these — strict list
@@ -307,6 +318,45 @@ def fetch_lever(slug: str, company_name: str, title_keywords: List[str]) -> List
 JSEARCH_URL     = "https://jsearch.p.rapidapi.com/search"
 JSEARCH_DAY_CAP = 5
 
+# Known aggregator domains — prefer employer direct links over these
+AGGREGATOR_DOMAINS = {
+    "lensa.com", "ziprecruiter.com", "indeed.com", "glassdoor.com",
+    "monster.com", "careerbuilder.com", "simplyhired.com", "jooble.org",
+    "talent.com", "jobrapido.com", "adzuna.com", "recruit.net",
+    "jobs2careers.com", "whatjobs.com", "neuvoo.com", "trovit.com",
+}
+
+def best_apply_url(job_data: Dict) -> str:
+    """
+    Return the most direct apply URL from JSearch job data.
+    Prefers employer_website or non-aggregator links.
+    """
+    candidates = [
+        job_data.get("job_apply_link", ""),
+        job_data.get("job_google_link", ""),
+    ]
+    # Also check if employer website + job ID can be constructed
+    employer_website = job_data.get("employer_website") or ""
+
+    for url in candidates:
+        if not url:
+            continue
+        from urllib.parse import urlparse
+        try:
+            domain = urlparse(url).netloc.lower().lstrip("www.")
+            if not any(agg in domain for agg in AGGREGATOR_DOMAINS):
+                return url  # Direct employer link
+        except Exception:
+            pass
+
+    # All candidates are aggregators — return the first non-empty one anyway
+    # (better than nothing, and Gemini scoring still works on description)
+    for url in candidates:
+        if url:
+            return url
+
+    return ""
+
 
 def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
     headers = {
@@ -342,7 +392,7 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
         if country and country not in ("US", "USA", "UNITED STATES", ""):
             continue
 
-        apply_url = job.get("job_apply_link") or job.get("job_google_link") or ""
+        apply_url = best_apply_url(job)
         city      = job.get("job_city")  or ""
         state     = job.get("job_state") or ""
         location  = ", ".join(filter(None, [city, state]))

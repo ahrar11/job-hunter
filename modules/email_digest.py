@@ -227,7 +227,7 @@ class EmailDigest:
         with open(f"{config_dir}/settings.json") as f:
             settings = json.load(f)
         self.email_cfg  = settings.get("email", {})
-        self.to_addr    = self.email_cfg.get("to", "")
+        self.to_addr    = os.environ.get("RESEND_TO_EMAIL", self.email_cfg.get("to", ""))
         self.from_name  = "Job Hunter Bot"
         # Use a Resend verified sender address — set in settings.json or env
         self.from_addr  = os.environ.get("RESEND_FROM_EMAIL",
@@ -273,7 +273,15 @@ class EmailDigest:
                 return True
         except urllib.error.HTTPError as e:
             err_body = e.read().decode()
-            logger.error(f"  ✗ Resend API error {e.code}: {err_body[:200]}")
+            logger.error(f"  ✗ Resend API error {e.code}: {err_body[:300]}")
+            if "1010" in err_body or "testing emails" in err_body.lower():
+                logger.error(
+                    "  → Error 1010: Resend only delivers to your signup email when using "
+                    "onboarding@resend.dev as sender.\n"
+                    "  FIX: In Resend dashboard → Domains → add & verify your domain, "
+                    "then update RESEND_FROM_EMAIL secret to yourname@yourdomain.com\n"
+                    "  OR: Set RESEND_TO_EMAIL to the email you signed up with on Resend."
+                )
             return False
         except Exception as e:
             logger.error(f"  ✗ Resend send failed: {e}")
