@@ -146,11 +146,12 @@ def generate_docx(tailored_data: Dict, personal: Dict, education: List, output_p
 
     try:
         result = subprocess.run(
-            ["node", str(GENERATE_SCRIPT)],
+            ["node", GENERATE_SCRIPT.name],
             input=payload_str,
             capture_output=True,
             text=True,
             timeout=30,
+            cwd=str(GENERATE_SCRIPT.parent),  # Run from scripts/ so node_modules is found
         )
         if result.returncode != 0:
             logger.error(f"Node.js resume gen failed:\n{result.stderr[:500]}")

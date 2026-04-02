@@ -2,15 +2,14 @@ name: Daily Job Hunter
 
 on:
   schedule:
-    # 7:00 AM EST = 12:00 UTC. Change hour to suit your preference.
-    - cron: "0 12 * * *"
-  workflow_dispatch:   # Manual trigger from the Actions tab
+    - cron: "0 12 * * *"   # 7:00 AM EST = 12:00 UTC
+  workflow_dispatch:
 
 jobs:
   hunt:
     runs-on: ubuntu-latest
     permissions:
-      contents: write   # Needed to push updated data files back to repo
+      contents: write
 
     steps:
       - name: Checkout repo
@@ -26,17 +25,21 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Node.js docx package
-        run: npm install -g docx
+      - name: Install Node.js docx package (local install so require() finds it)
+        run: |
+          cd scripts
+          npm init -y
+          npm install docx
+          cd ..
 
       - name: Run Job Hunter pipeline
         env:
-          JSEARCH_API_KEY:    ${{ secrets.JSEARCH_API_KEY }}
-          ADZUNA_APP_ID:      ${{ secrets.ADZUNA_APP_ID }}
-          ADZUNA_APP_KEY:     ${{ secrets.ADZUNA_APP_KEY }}
-          GEMINI_API_KEY:     ${{ secrets.GEMINI_API_KEY }}
-          RESEND_API_KEY:     ${{ secrets.RESEND_API_KEY }}
-          RESEND_FROM_EMAIL:  ${{ secrets.RESEND_FROM_EMAIL }}
+          JSEARCH_API_KEY:   ${{ secrets.JSEARCH_API_KEY }}
+          ADZUNA_APP_ID:     ${{ secrets.ADZUNA_APP_ID }}
+          ADZUNA_APP_KEY:    ${{ secrets.ADZUNA_APP_KEY }}
+          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
+          RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
+          RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
         run: python main.py
 
       - name: Commit updated files

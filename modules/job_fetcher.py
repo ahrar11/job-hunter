@@ -26,17 +26,34 @@ import requests
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
 
+# ─────────────────────────────────────────────────────────────
+# CONSTANTS
+# ─────────────────────────────────────────────────────────────
 
-# ─────────────────────────────────────────────────────────────
-# SIGNAL DICTIONARIES
-# ─────────────────────────────────────────────────────────────
+# Hard cap on total jobs sent to scorer — prevents 2hr Gemini runs
+MAX_JOBS_TO_SCORE = 40
+
+# US-only: any location containing these strings is kept
+US_LOCATION_SIGNALS = [
+    "remote", "united states", ", us", ", usa", "u.s.", "u.s.a",
+    # US state abbreviations — use ", xx" format to avoid matching "ca" in "canada"
+    ", al",", ak",", az",", ar",", ca",", co",", ct",", de",", fl",", ga",
+    ", hi",", id",", il",", in",", ia",", ks",", ky",", la",", me",", md",
+    ", ma",", mi",", mn",", ms",", mo",", mt",", ne",", nv",", nh",", nj",
+    ", nm",", ny",", nc",", nd",", oh",", ok",", or",", pa",", ri",", sc",
+    ", sd",", tn",", tx",", ut",", vt",", va",", wa",", wv",", wi",", wy",
+    # Common US city names
+    "new york", "san francisco", "seattle", "boston", "chicago",
+    "austin", "los angeles", "denver", "atlanta", "washington dc",
+    "washington, d.c", "mountain view", "menlo park", "palo alto",
+    "new york city", "nyc", "portland, or", "portland, me",
+]
 
 CPT_POSITIVE = [
     "cpt", "opt", "f-1", "f1 visa", "open to international",
     "visa sponsorship available", "sponsor work authorization",
     "international students welcome", "all work authorizations",
-    "any work authorization", "eligible to work in the us",
-    "work authorization will be considered",
+    "any work authorization", "work authorization will be considered",
 ]
 
 CPT_NEGATIVE = [
@@ -49,32 +66,22 @@ CPT_NEGATIVE = [
     "security clearance required", "secret clearance",
     "top secret clearance", "must be a u.s. citizen",
     "requires u.s. citizenship", "usc or gc only",
-    "green card holders only", "permanent authorization required",
+    "green card holders only",
     "must be eligible to work in the us without sponsorship",
 ]
 
-SUMMER_SIGNALS = [
-    "summer 2026", "summer '26", "summer internship 2026",
-    "may 2026", "june 2026", "july 2026", "august 2026",
-    "spring/summer 2026", "summer/fall 2026",
-    # Also catch generic "summer" without year
-    "summer internship", "summer program", "summer analyst",
+# Title must contain one of these — strict list, no "entry level" etc.
+INTERN_TITLE_SIGNALS = [
+    "intern", "internship", "co-op", "coop", "co op",
+    "summer analyst", "summer associate",
 ]
 
 EXCLUDE_TITLE_WORDS = [
-    "senior", "staff", "principal", "director", "vp ", "vice president",
-    "manager", " lead ", "head of", "full-time", "full time", "permanent",
-    "part-time contractor", "contract to hire",
+    "senior", "sr.", "staff", "principal", "director", "vp ",
+    "vice president", "manager", " lead ", "head of",
+    "full-time", "full time", "permanent", "contract to hire",
+    "part-time contractor",
 ]
-
-# Broader intern signals — catches "intern", "internship", "co-op", and
-# also roles that say "summer analyst" or "summer program" without "intern"
-INTERN_SIGNALS = [
-    "intern", "internship", "co-op", "coop", "co op",
-    "summer analyst", "summer associate", "summer program",
-    "new grad", "entry level", "entry-level",
-]
-
 
 # ─────────────────────────────────────────────────────────────
 # HELPERS
@@ -82,8 +89,7 @@ INTERN_SIGNALS = [
 
 def strip_html(html: str) -> str:
     text = re.sub(r'<[^>]+>', ' ', html or "")
-    text = re.sub(r'\s+', ' ', text)
-    return text.strip()
+    return re.sub(r'\s+', ' ', text).strip()
 
 
 def make_id(company: str, title: str, url: str) -> str:
@@ -92,51 +98,57 @@ def make_id(company: str, title: str, url: str) -> str:
 
 
 def detect_cpt(description: str) -> Dict:
-    desc = description.lower()
-    pos    = [s for s in CPT_POSITIVE if s in desc]
-    neg    = [s for s in CPT_NEGATIVE if s in desc]
-    summer = [s for s in SUMMER_SIGNALS if s in desc]
-
-    if neg:
-        signal = "negative"
-    elif pos:
-        signal = "positive"
-    else:
-        signal = "neutral"
-
+    desc  = description.lower()
+    pos   = [s for s in CPT_POSITIVE if s in desc]
+    neg   = [s for s in CPT_NEGATIVE if s in desc]
+    if neg:   signal = "negative"
+    elif pos: signal = "positive"
+    else:     signal = "neutral"
     return {
-        "cpt_signal": signal,
-        "cpt_positive_hits": pos,
-        "cpt_negative_hits": neg,
-        "summer_2026_mentioned": bool(summer),
+        "cpt_signal":         signal,
+        "cpt_positive_hits":  pos,
+        "cpt_negative_hits":  neg,
+        "summer_2026_mentioned": any(
+            s in desc for s in ["summer 2026","summer internship","summer analyst"]
+        ),
     }
 
 
-def is_intern_role(title: str, description: str) -> bool:
+def is_intern_role(title: str, description: str = "") -> bool:
     """
-    Returns True if the role is likely an internship / entry-level position.
-    Intentionally permissive — we filter more precisely in Module 2 (Gemini scoring).
+    STRICT: the job TITLE must contain an intern signal.
+    We no longer accept 'analyst in description' as a fallback —
+    that was letting full-time roles through.
     """
     t = title.lower()
-    d = description.lower()
 
-    # Must have at least one intern signal in TITLE (description alone is too noisy)
-    if not any(s in t for s in INTERN_SIGNALS):
-        # Allow if it's in the description AND the title contains analyst/science/strategy
-        analyst_in_title = any(w in t for w in [
-            "analyst", "analytics", "science", "strategy", "intelligence",
-            "operations", "marketing", "product", "research",
-        ])
-        intern_in_desc = any(s in d for s in ["intern", "internship", "summer program"])
-        if not (analyst_in_title and intern_in_desc):
-            return False
+    # Must have an explicit intern signal in title
+    if not any(s in t for s in INTERN_TITLE_SIGNALS):
+        return False
 
-    # Exclude obvious senior / FT roles by title
+    # Exclude senior/FT roles
     for bad in EXCLUDE_TITLE_WORDS:
         if bad in t:
             return False
 
     return True
+
+
+def is_us_location(location: str) -> bool:
+    """Return True if location appears to be in the US (or Remote)."""
+    if not location:
+        return True   # Unknown location — let Gemini decide; don't discard
+    loc = location.lower().strip()
+
+    # Explicit non-US signals — bail early
+    non_us = ["canada", "mexico", "india", "china", "uk", "england",
+               "germany", "france", "australia", "singapore", "japan",
+               "brazil", "netherlands", "ireland", "spain", "italy"]
+    if any(f in loc for f in non_us):
+        return False
+
+    # Check US signals
+    return any(sig in loc for sig in US_LOCATION_SIGNALS)
 
 
 def build_job(
@@ -145,17 +157,16 @@ def build_job(
 ) -> Dict:
     cpt_info = detect_cpt(description)
     return {
-        "id":          make_id(company, title, apply_url),
-        "title":       title.strip(),
-        "company":     company.strip(),
-        "location":    (location or "Not specified").strip(),
-        "description": description[:4000],
-        "apply_url":   apply_url.strip(),
-        "posted_at":   posted_at,
-        "source":      source,
-        "is_intern":   is_intern_role(title, description),
-        "fetched_at":  datetime.now(timezone.utc).isoformat(),
-        "status":      "new",
+        "id":               make_id(company, title, apply_url),
+        "title":            title.strip(),
+        "company":          company.strip(),
+        "location":         (location or "Not specified").strip(),
+        "description":      description[:4000],
+        "apply_url":        apply_url.strip(),
+        "posted_at":        posted_at,
+        "source":           source,
+        "fetched_at":       datetime.now(timezone.utc).isoformat(),
+        "status":           "new",
         "connection_flag":  None,
         "relevance_score":  None,
         **cpt_info,
@@ -163,7 +174,7 @@ def build_job(
 
 
 # ─────────────────────────────────────────────────────────────
-# SOURCE 1 — GREENHOUSE  (free, no key)
+# SOURCE 1 — GREENHOUSE
 # ─────────────────────────────────────────────────────────────
 
 def fetch_greenhouse(board_token: str, company_name: str, title_keywords: List[str]) -> List[Dict]:
@@ -178,19 +189,20 @@ def fetch_greenhouse(board_token: str, company_name: str, title_keywords: List[s
 
     jobs = []
     for job in raw.get("jobs", []):
-        title   = job.get("title", "")
+        title   = job.get("title", "") or ""
         title_l = title.lower()
 
-        # Must match at least one role keyword in title
         if not any(kw in title_l for kw in title_keywords):
+            continue
+        if not is_intern_role(title):
             continue
 
         description = strip_html(job.get("content", ""))
-        if not is_intern_role(title, description):
-            continue
+        loc_obj     = job.get("location", {})
+        location    = loc_obj.get("name", "") if isinstance(loc_obj, dict) else str(loc_obj)
 
-        loc_obj  = job.get("location", {})
-        location = loc_obj.get("name", "") if isinstance(loc_obj, dict) else str(loc_obj)
+        if not is_us_location(location):
+            continue
 
         jobs.append(build_job(
             title=title, company=company_name, location=location,
@@ -203,7 +215,7 @@ def fetch_greenhouse(board_token: str, company_name: str, title_keywords: List[s
 
 
 # ─────────────────────────────────────────────────────────────
-# SOURCE 2 — LEVER  (free, no key)
+# SOURCE 2 — LEVER
 # ─────────────────────────────────────────────────────────────
 
 def fetch_lever(slug: str, company_name: str, title_keywords: List[str]) -> List[Dict]:
@@ -218,10 +230,12 @@ def fetch_lever(slug: str, company_name: str, title_keywords: List[str]) -> List
 
     jobs = []
     for post in postings:
-        title   = post.get("text", "")
+        title   = post.get("text", "") or ""
         title_l = title.lower()
 
         if not any(kw in title_l for kw in title_keywords):
+            continue
+        if not is_intern_role(title):
             continue
 
         commitment = (post.get("categories") or {}).get("commitment", "").lower()
@@ -235,14 +249,14 @@ def fetch_lever(slug: str, company_name: str, title_keywords: List[str]) -> List
                 parts.append(strip_html(str(item)))
         description = " ".join(parts)
 
-        if not is_intern_role(title, description):
-            continue
-
-        cats     = post.get("categories") or {}
-        location = cats.get("location", "")
+        cats      = post.get("categories") or {}
+        location  = cats.get("location", "")
         apply_url = post.get("hostedUrl") or post.get("applyUrl") or ""
 
-        ts = post.get("createdAt")
+        if not is_us_location(location):
+            continue
+
+        ts        = post.get("createdAt")
         posted_at = (
             datetime.fromtimestamp(ts / 1000, tz=timezone.utc).isoformat()
             if ts else None
@@ -259,10 +273,7 @@ def fetch_lever(slug: str, company_name: str, title_keywords: List[str]) -> List
 
 
 # ─────────────────────────────────────────────────────────────
-# SOURCE 3 — JSEARCH  (200 req/month free)
-# FIX: date_posted "month" instead of "today" — "today" returned
-#      nothing because internship postings don't spike every day.
-#      We deduplicate via seen_jobs.json so widening the window is safe.
+# SOURCE 3 — JSEARCH
 # ─────────────────────────────────────────────────────────────
 
 JSEARCH_URL     = "https://jsearch.p.rapidapi.com/search"
@@ -275,15 +286,11 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
         "X-RapidAPI-Host": "jsearch.p.rapidapi.com",
     }
     params = {
-        "query":     query,
-        "page":      "1",
-        "num_pages": "2",
-        # FIXED: was "today" → returned 0 results every run.
-        # "month" casts a wide net; seen_jobs.json prevents re-showing old roles.
-        "date_posted": "month",
+        "query":       query,
+        "page":        "1",
+        "num_pages":   "2",
+        "date_posted": "week",
     }
-    # NOTE: removed employment_types="INTERN" — that filter is too strict
-    # and excludes valid postings classified as "contract" or "other".
 
     try:
         resp = requests.get(JSEARCH_URL, headers=headers, params=params, timeout=25)
@@ -296,26 +303,25 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
     jobs = []
     for job in data.get("data", []):
         title       = job.get("job_title")       or ""
-        description = job.get("job_description")  or ""
-        employer    = job.get("employer_name")     or ""
+        description = job.get("job_description") or ""
+        employer    = job.get("employer_name")   or ""
 
         if not is_intern_role(title, description):
             continue
 
-        apply_url = (
-            job.get("job_apply_link")
-            or job.get("job_google_link")
-            or ""
-        )
+        # JSearch country filter
+        country = (job.get("job_country") or "").upper()
+        if country and country not in ("US", "USA", "UNITED STATES", ""):
+            continue
 
-        city     = job.get("job_city")  or ""
-        state    = job.get("job_state") or ""
-        location = ", ".join(filter(None, [city, state]))
+        apply_url = job.get("job_apply_link") or job.get("job_google_link") or ""
+        city      = job.get("job_city")  or ""
+        state     = job.get("job_state") or ""
+        location  = ", ".join(filter(None, [city, state]))
 
         jobs.append(build_job(
-            title=title, company=job.get("employer_name", ""),
-            location=location, description=description,
-            apply_url=apply_url,
+            title=title, company=employer, location=location,
+            description=description, apply_url=apply_url,
             posted_at=job.get("job_posted_at_datetime_utc"),
             source="jsearch",
         ))
@@ -325,47 +331,33 @@ def fetch_jsearch(query: str, api_key: str) -> List[Dict]:
 
 
 def build_jsearch_queries(job_titles: List[str], general_companies: List[str]) -> List[str]:
-    """
-    5 broad queries — no 'summer 2026' baked in because that phrase
-    isn't in most postings. The Gemini scorer handles relevance.
-    """
-    analyst_group = "business analyst OR data analyst OR BI analyst"
-    ops_group     = "operations analyst OR strategy analyst OR product analyst"
-    ds_group      = "data science intern OR marketing analyst OR business intelligence"
-    top_companies = " OR ".join(general_companies[:5])
-
     return [
-        f"({analyst_group}) intern 2026",
-        f"({ops_group}) intern 2026",
-        f"{ds_group} 2026",
-        f"analyst intern ({top_companies})",
-        f"data analyst intern OR business analyst intern remote",
+        "business analyst intern 2026",
+        "data analyst intern 2026",
+        "data science intern summer 2026",
+        "operations analyst intern OR strategy intern 2026",
+        "business intelligence intern OR marketing analyst intern 2026",
     ]
 
 
 # ─────────────────────────────────────────────────────────────
-# SOURCE 4 — ADZUNA  (1,000 req/month free)
-# FIX 1: max_days_old 1 → 30 (same reason as JSearch above)
-# FIX 2: removed what_and="internship" — it required the literal word
-#         "internship" alongside every query, killing "intern" matches.
+# SOURCE 4 — ADZUNA
 # ─────────────────────────────────────────────────────────────
 
 ADZUNA_URL     = "https://api.adzuna.com/v1/api/jobs/us/search/1"
-ADZUNA_DAY_CAP = 15
+ADZUNA_DAY_CAP = 12
 
 
 def fetch_adzuna(query: str, app_id: str, app_key: str) -> List[Dict]:
     params = {
-        "app_id":          app_id,
-        "app_key":         app_key,
-        "what":            query,
-        # FIXED: was max_days_old=1 → zero results every run
-        "max_days_old":    30,
+        "app_id":           app_id,
+        "app_key":          app_key,
+        "what":             query,
+        "max_days_old":     7,
         "results_per_page": 20,
-        "sort_by":         "date",
-        "content-type":    "application/json",
+        "sort_by":          "date",
+        "content-type":     "application/json",
     }
-    # NOTE: removed what_and="internship" — too strict, missed "intern" postings
 
     try:
         resp = requests.get(ADZUNA_URL, params=params, timeout=20)
@@ -377,17 +369,20 @@ def fetch_adzuna(query: str, app_id: str, app_key: str) -> List[Dict]:
 
     jobs = []
     for job in data.get("results", []):
-        title       = job.get("title", "")
-        description = job.get("description", "")
+        title       = job.get("title", "")       or ""
+        description = job.get("description", "") or ""
 
         if not is_intern_role(title, description):
             continue
 
         loc_obj  = job.get("location") or {}
         location = loc_obj.get("display_name", "") if isinstance(loc_obj, dict) else ""
+        co_obj   = job.get("company") or {}
+        company  = co_obj.get("display_name", "") if isinstance(co_obj, dict) else ""
 
-        co_obj  = job.get("company") or {}
-        company = co_obj.get("display_name", "") if isinstance(co_obj, dict) else ""
+        # Adzuna /us/ endpoint is already US-only, but double-check
+        if not is_us_location(location) and location:
+            continue
 
         jobs.append(build_job(
             title=title, company=company, location=location,
@@ -402,17 +397,20 @@ def fetch_adzuna(query: str, app_id: str, app_key: str) -> List[Dict]:
 
 
 def build_adzuna_queries(job_titles: List[str], general_companies: List[str]) -> List[str]:
-    """
-    Broader queries — no 'summer 2026' required in every search.
-    """
-    queries = []
-    for title in job_titles:
-        # Remove year so we catch all current postings
-        base = title.replace(" Intern", "").replace(" Internship", "").strip()
-        queries.append(f"{base} intern")
-    for company in general_companies[:8]:
-        queries.append(f"analyst intern {company}")
-    return queries[:ADZUNA_DAY_CAP]
+    base_queries = [
+        "business analyst intern",
+        "data analyst intern",
+        "data science intern",
+        "strategy intern",
+        "business intelligence intern",
+        "operations analyst intern",
+        "marketing analyst intern",
+    ]
+    # A few company-specific searches for target companies
+    company_queries = [
+        f"analyst intern {c}" for c in general_companies[:5]
+    ]
+    return (base_queries + company_queries)[:ADZUNA_DAY_CAP]
 
 
 # ─────────────────────────────────────────────────────────────
@@ -423,10 +421,8 @@ def load_seen_ids(path: str = "data/seen_jobs.json") -> set:
     p = Path(path)
     if p.exists():
         with open(p) as f:
-            try:
-                return set(json.load(f))
-            except Exception:
-                return set()
+            try:    return set(json.load(f))
+            except: return set()
     return set()
 
 
@@ -452,7 +448,7 @@ def split_by_cpt(jobs: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
 
 
 # ─────────────────────────────────────────────────────────────
-# MAIN ORCHESTRATOR
+# MAIN
 # ─────────────────────────────────────────────────────────────
 
 class JobFetcher:
@@ -462,12 +458,11 @@ class JobFetcher:
         with open(f"{config_dir}/job_titles.json") as f:
             self.job_titles = json.load(f)["titles"]
         with open(f"{config_dir}/target_companies.json") as f:
-            companies = json.load(f)
-            self.greenhouse = companies.get("greenhouse", {})
-            self.lever      = companies.get("lever", {})
-            self.general    = companies.get("general", [])
+            companies        = json.load(f)
+            self.greenhouse  = companies.get("greenhouse", {})
+            self.lever       = companies.get("lever", {})
+            self.general     = companies.get("general", [])
 
-        # Strip "intern/internship" suffix for ATS keyword matching
         self.title_keywords = list({
             t.lower()
              .replace(" intern", "")
@@ -477,14 +472,14 @@ class JobFetcher:
         })
 
         self.jsearch_key = os.environ.get("JSEARCH_API_KEY", "")
-        self.adzuna_id   = os.environ.get("ADZUNA_APP_ID", "")
-        self.adzuna_key  = os.environ.get("ADZUNA_APP_KEY", "")
+        self.adzuna_id   = os.environ.get("ADZUNA_APP_ID",   "")
+        self.adzuna_key  = os.environ.get("ADZUNA_APP_KEY",  "")
 
     def run(self) -> Dict:
         logger.info("═" * 60)
         logger.info("JOB FETCHER — starting run")
-        logger.info(f"Targeting {len(self.job_titles)} roles across "
-                    f"{len(self.greenhouse)+len(self.lever)+len(self.general)} companies")
+        logger.info(f"Targeting {len(self.job_titles)} roles | "
+                    f"US-only | intern titles only")
         logger.info("═" * 60)
 
         all_jobs: List[Dict] = []
@@ -513,7 +508,7 @@ class JobFetcher:
                 all_jobs.extend(jobs)
                 time.sleep(2)
         else:
-            logger.info("\n[3/4] JSearch skipped — JSEARCH_API_KEY not set")
+            logger.info("\n[3/4] JSearch skipped — key not set")
 
         # 4. Adzuna
         if self.adzuna_id and self.adzuna_key:
@@ -523,25 +518,31 @@ class JobFetcher:
                 all_jobs.extend(jobs)
                 time.sleep(1)
         else:
-            logger.info("\n[4/4] Adzuna skipped — ADZUNA credentials not set")
+            logger.info("\n[4/4] Adzuna skipped — credentials not set")
 
         # Dedup + CPT split
-        seen    = load_seen_ids()
-        fresh   = deduplicate(all_jobs, seen)
-        viable, flagged = split_by_cpt(fresh)
+        seen             = load_seen_ids()
+        fresh            = deduplicate(all_jobs, seen)
+        viable, flagged  = split_by_cpt(fresh)
 
-        # Mark all fresh jobs as seen so next run skips them
+        # Cap at MAX_JOBS_TO_SCORE so Gemini doesn't take 2+ hours
+        # Prioritise: CPT positive first, then neutral
+        cpt_pos     = [j for j in viable if j["cpt_signal"] == "positive"]
+        cpt_neutral = [j for j in viable if j["cpt_signal"] == "neutral"]
+        viable_capped = (cpt_pos + cpt_neutral)[:MAX_JOBS_TO_SCORE]
+
         save_seen_ids(seen | {j["id"] for j in fresh})
 
         output = {
             "run_date": datetime.now(timezone.utc).isoformat(),
             "stats": {
-                "total_fetched": len(all_jobs),
-                "new_unique":    len(fresh),
-                "viable":        len(viable),
-                "cpt_flagged":   len(flagged),
+                "total_fetched":  len(all_jobs),
+                "new_unique":     len(fresh),
+                "viable":         len(viable_capped),
+                "cpt_flagged":    len(flagged),
+                "capped_from":    len(viable),
             },
-            "viable_jobs":      viable,
+            "viable_jobs":      viable_capped,
             "cpt_flagged_jobs": flagged,
         }
 
@@ -551,9 +552,7 @@ class JobFetcher:
             json.dump(output, f, indent=2, default=str)
 
         logger.info("\n" + "═" * 60)
-        logger.info(f"DONE — {len(viable)} viable | {len(flagged)} CPT-flagged | "
-                    f"{len(all_jobs)} total fetched")
-        logger.info(f"Output → {out_path}")
+        logger.info(f"DONE — {len(viable_capped)} viable (capped from {len(viable)}) "
+                    f"| {len(flagged)} CPT-flagged | {len(all_jobs)} total fetched")
         logger.info("═" * 60)
-
         return output

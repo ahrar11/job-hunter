@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 GEMINI_URL = (
     "https://generativelanguage.googleapis.com/v1beta/models/"
-    "gemini-1.5-flash-latest:generateContent"
+    "gemini-2.0-flash:generateContent"
 )
 
 
@@ -25,7 +25,7 @@ def call_gemini(
     temperature: float = 0.2,
     max_tokens: int = 2048,
     retries: int = 3,
-    retry_delay: float = 20.0,
+    retry_delay: float = 8.0,
 ) -> Optional[str]:
     """
     Call Gemini and return the text response.
