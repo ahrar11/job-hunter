@@ -25,7 +25,7 @@ import re
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from modules.gemini_helper import call_gemini_json
+from modules.llm_helper import call_claude_json as call_gemini_json
 
 logger = logging.getLogger(__name__)
 

@@ -324,6 +324,8 @@ AGGREGATOR_DOMAINS = {
     "monster.com", "careerbuilder.com", "simplyhired.com", "jooble.org",
     "talent.com", "jobrapido.com", "adzuna.com", "recruit.net",
     "jobs2careers.com", "whatjobs.com", "neuvoo.com", "trovit.com",
+    "google.com/search", "google.com",   # Google Jobs search redirect
+    "jobrapido.com", "talent.com",
 }
 
 def best_apply_url(job_data: Dict) -> str:
@@ -343,7 +345,12 @@ def best_apply_url(job_data: Dict) -> str:
             continue
         from urllib.parse import urlparse
         try:
-            domain = urlparse(url).netloc.lower().lstrip("www.")
+            parsed = urlparse(url)
+            domain = parsed.netloc.lower().lstrip("www.")
+            full   = (domain + parsed.path).lower()
+            # Skip Google Jobs search redirects
+            if "google.com" in domain and "ibp=htl" in url:
+                continue
             if not any(agg in domain for agg in AGGREGATOR_DOMAINS):
                 return url  # Direct employer link
         except Exception:

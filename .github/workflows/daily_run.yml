@@ -34,12 +34,13 @@ jobs:
 
       - name: Run Job Hunter pipeline
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           JSEARCH_API_KEY:   ${{ secrets.JSEARCH_API_KEY }}
           ADZUNA_APP_ID:     ${{ secrets.ADZUNA_APP_ID }}
           ADZUNA_APP_KEY:    ${{ secrets.ADZUNA_APP_KEY }}
-          GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
           RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          RESEND_TO_EMAIL:   ${{ secrets.RESEND_TO_EMAIL }}
           GITHUB_REPO:       ${{ github.repository }}
         run: python main.py
 
@@ -57,7 +58,7 @@ jobs:
             data/digest.html \
             docs/index.html \
             config/job_titles.json \
-            resumes/ || true
+            "resumes/" || true
           git diff --staged --quiet || \
             git commit -m "chore: daily run $(date -u +%Y-%m-%d)"
           git push

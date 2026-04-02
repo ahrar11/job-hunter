@@ -1,9 +1,6 @@
 """
-Module 2: Relevance Scorer
-──────────────────────────────────────────────────────────────
-Scores jobs in chunks of 10 — each chunk = 1 Gemini call.
-31 jobs = 3-4 API calls instead of 31. ~30s total instead of 40min.
-──────────────────────────────────────────────────────────────
+Module 2: Relevance Scorer — uses Claude API (Anthropic)
+Scores in chunks of 10 → fast, reliable, no rate limit issues.
 """
 
 import json
@@ -12,12 +9,13 @@ import time
 from pathlib import Path
 from typing import List, Dict, Optional
 
-from modules.gemini_helper import call_gemini_json
+from modules.llm_helper import call_claude_json
 
 logger = logging.getLogger(__name__)
 
 TOP_N      = 20
-CHUNK_SIZE = 10   # Jobs per Gemini call — fits easily in free tier
+CHUNK_SIZE = 10
+
 
 def build_profile_summary(resume: Dict) -> str:
     skills = resume.get("skills", {})
@@ -26,16 +24,23 @@ def build_profile_summary(resume: Dict) -> str:
         + skills.get("programming", [])
         + skills.get("tools_and_methods", [])
     )
-    project_titles = [p["title"] for p in resume.get("projects", [])]
-    exp_titles     = [f"{e['title']} at {e['company']}" for e in resume.get("experience", [])]
-    ed = resume.get("education", [{}])[0]
-    return (
-        f"Degree: {ed.get('degree','')}, {ed.get('school','')} (graduating {ed.get('graduation','')})\n"
-        f"Visa: F-1 student on CPT — CANNOT work at roles requiring US Citizenship or Permanent Residency\n"
-        f"Skills: {', '.join(all_skills)}\n"
-        f"Projects: {'; '.join(project_titles)}\n"
-        f"Experience: {'; '.join(exp_titles)}"
+    ed          = resume.get("education", [{}])[0]
+    degree      = ed.get("degree", "")
+    school      = ed.get("school", "")
+    graduation  = ed.get("graduation", "")
+    projects    = "; ".join(p["title"] for p in resume.get("projects", []))
+    experience  = "; ".join(
+        e["title"] + " at " + e["company"] for e in resume.get("experience", [])
     )
+    skills_str  = ", ".join(all_skills)
+    return (
+        "Degree: " + degree + ", " + school + " (graduating " + graduation + ")\n"
+        "Visa: F-1 on CPT — CANNOT work at roles requiring US Citizenship or Permanent Residency\n"
+        "Skills: " + skills_str + "\n"
+        "Projects: " + projects + "\n"
+        "Experience: " + experience
+    )
+
 
 def load_feedback_boosts(path: str = "data/feedback_history.json") -> Dict:
     p = Path(path)
@@ -49,55 +54,65 @@ def load_feedback_boosts(path: str = "data/feedback_history.json") -> Dict:
         company = entry.get("company", "").lower()
         title   = entry.get("title",   "").lower()
         delta   = 10 if status == "applied" else (-5 if status == "skipped" else 0)
-        if company: cw[company] = cw.get(company, 0) + delta
-        if title:   tw[title]   = tw.get(title,   0) + delta
+        if company:
+            cw[company] = cw.get(company, 0) + delta
+        if title:
+            tw[title] = tw.get(title, 0) + delta
     return {"companies": cw, "titles": tw}
 
+
 def apply_feedback_boost(score: int, job: Dict, boosts: Dict) -> int:
-    boost = boosts["companies"].get(job.get("company","").lower(), 0)
+    boost = boosts["companies"].get(job.get("company", "").lower(), 0)
     for known, w in boosts["titles"].items():
-        if known in job.get("title","").lower():
-            boost += w; break
+        if known in job.get("title", "").lower():
+            boost += w
+            break
     return max(0, min(100, score + boost))
 
-CHUNK_PROMPT = """
-You are scoring internship job postings for an MS Business Analytics student.
+
+CHUNK_PROMPT = """Score these internship postings for an MS Business Analytics student.
 
 CANDIDATE:
 {profile}
 
-Score EACH job 0-100. Rules:
+RULES:
 - Score 0 if role requires US Citizenship or Permanent Residency
-- Score 0 if role is clearly wrong domain (cybersecurity, engineering, etc.)
-- High scores (75+) for strong skill match: Python, SQL, Tableau, Power BI, BigQuery, analytics
-- Medium (50-74) for partial match or unknown company
-- Low (<50) for weak match
+- Score 75-100 for strong match: Python, SQL, Tableau, Power BI, BigQuery, analytics roles
+- Score 50-74 for partial match
+- Score 1-49 for weak match or wrong domain
 
 JOBS:
 {jobs_json}
 
-Return a JSON array of exactly {n} objects (same order):
-[{{"score":<int>,"match_reason":"<1 sentence>","skill_matches":["skill1"],"concern":"<or empty>"}}]
-JSON only, no markdown.
-"""
+Return ONLY a JSON array of exactly {n} objects in the same order:
+[{{"score": <0-100>, "match_reason": "<1 sentence>", "skill_matches": ["skill1"], "concern": "<or empty>"}}]
+No markdown, no explanation."""
+
 
 def score_chunk(jobs: List[Dict], profile: str) -> List[Optional[Dict]]:
     compact = [
-        {"idx": i, "title": j["title"], "company": j["company"],
-         "location": j["location"], "description": j["description"][:350]}
+        {
+            "idx": i,
+            "title": j["title"],
+            "company": j["company"],
+            "location": j["location"],
+            "description": j["description"][:400],
+        }
         for i, j in enumerate(jobs)
     ]
     prompt = CHUNK_PROMPT.format(
         profile=profile,
         jobs_json=json.dumps(compact, indent=2),
-        n=len(jobs)
+        n=len(jobs),
     )
-    result = call_gemini_json(prompt, temperature=0.1, max_tokens=2000)
+    result = call_claude_json(prompt, temperature=0.1, max_tokens=2000)
     if not isinstance(result, list):
+        logger.warning("  Chunk scoring returned unexpected type: %s", type(result))
         return [None] * len(jobs)
     while len(result) < len(jobs):
         result.append(None)
     return result[:len(jobs)]
+
 
 class RelevanceScorer:
     def __init__(self, config_dir: str = "config"):
@@ -109,9 +124,9 @@ class RelevanceScorer:
         self.top_n   = self.settings.get("search", {}).get("top_n_jobs", TOP_N)
 
     def run(self) -> Dict:
-        logger.info("═" * 60)
-        logger.info(f"RELEVANCE SCORER — chunked ({CHUNK_SIZE} jobs/call)")
-        logger.info("═" * 60)
+        logger.info("=" * 60)
+        logger.info("RELEVANCE SCORER — Claude API, chunks of %d", CHUNK_SIZE)
+        logger.info("=" * 60)
 
         raw_path = Path("data/raw_jobs.json")
         if not raw_path.exists():
@@ -122,22 +137,20 @@ class RelevanceScorer:
             raw = json.load(f)
 
         jobs: List[Dict] = raw.get("viable_jobs", [])
-        logger.info(f"Scoring {len(jobs)} jobs in chunks of {CHUNK_SIZE}...")
+        logger.info("Scoring %d jobs...", len(jobs))
 
-        boosts  = load_feedback_boosts()
-        all_scores: List[Optional[Dict]] = []
+        boosts     = load_feedback_boosts()
+        all_scores = []
 
-        # Process in chunks
-        chunks = [jobs[i:i+CHUNK_SIZE] for i in range(0, len(jobs), CHUNK_SIZE)]
+        chunks = [jobs[i:i + CHUNK_SIZE] for i in range(0, len(jobs), CHUNK_SIZE)]
         for ci, chunk in enumerate(chunks, 1):
-            logger.info(f"  Chunk {ci}/{len(chunks)} ({len(chunk)} jobs)...")
+            logger.info("  Chunk %d/%d (%d jobs)...", ci, len(chunks), len(chunk))
             scores = score_chunk(chunk, self.profile)
             all_scores.extend(scores)
             if ci < len(chunks):
-                time.sleep(5)   # Brief pause between chunks
+                time.sleep(2)
 
-        # Merge scores back into jobs
-        scored: List[Dict] = []
+        scored = []
         for job, scoring in zip(jobs, all_scores):
             if scoring is None:
                 raw_score, match_reason, skill_matches, concern = 50, "Could not score", [], ""
@@ -148,10 +161,13 @@ class RelevanceScorer:
                 concern       = scoring.get("concern", "")
 
             boosted = apply_feedback_boost(raw_score, job, boosts)
-            scored.append({**job,
-                "relevance_score": boosted, "raw_score": raw_score,
-                "match_reason": match_reason, "skill_matches": skill_matches,
-                "concern": concern,
+            scored.append({
+                **job,
+                "relevance_score": boosted,
+                "raw_score":       raw_score,
+                "match_reason":    match_reason,
+                "skill_matches":   skill_matches,
+                "concern":         concern,
             })
 
         scored.sort(key=lambda j: j["relevance_score"], reverse=True)
@@ -164,13 +180,12 @@ class RelevanceScorer:
             "top_jobs":       top_jobs,
             "remaining_jobs": scored[self.top_n:],
         }
-        out_path = Path("data/top_jobs.json")
-        with open(out_path, "w") as f:
+        with open("data/top_jobs.json", "w") as f:
             json.dump(output, f, indent=2, default=str)
 
-        logger.info(f"\nDONE — top {len(top_jobs)} jobs selected")
+        logger.info("\nDONE — top %d jobs selected", len(top_jobs))
         for job in top_jobs[:5]:
-            logger.info(f"  [{job['relevance_score']:3d}] {job['company']} — {job['title']}")
+            logger.info("  [%3d] %s — %s", job["relevance_score"], job["company"], job["title"])
         if len(top_jobs) > 5:
-            logger.info(f"  ... and {len(top_jobs)-5} more")
+            logger.info("  ... and %d more", len(top_jobs) - 5)
         return output
