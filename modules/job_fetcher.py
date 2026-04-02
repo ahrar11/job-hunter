@@ -68,12 +68,24 @@ CPT_NEGATIVE = [
     "requires u.s. citizenship", "usc or gc only",
     "green card holders only",
     "must be eligible to work in the us without sponsorship",
+    "us citizenship required", "u.s. citizenship required",
+    "must be a us citizen", "requires us citizenship",
+    "citizenship is required", "only us citizens",
 ]
 
-# Title must contain one of these — strict list, no "entry level" etc.
+# Title must contain one of these — strict list
 INTERN_TITLE_SIGNALS = [
     "intern", "internship", "co-op", "coop", "co op",
     "summer analyst", "summer associate",
+]
+
+# Title must ALSO contain at least one of these role keywords
+# This prevents "Engineering Intern", "Cybersecurity Intern", "AI/ML Intern" etc.
+ROLE_KEYWORDS = [
+    "analyst", "analytics", "business", "data", "strategy", "strategic",
+    "operations", "operational", "intelligence", "marketing", "insights",
+    "reporting", "visualization", "bi ", "b.i.", "product", "finance",
+    "consulting", "research", "quant", "quantitative",
 ]
 
 EXCLUDE_TITLE_WORDS = [
@@ -81,6 +93,14 @@ EXCLUDE_TITLE_WORDS = [
     "vice president", "manager", " lead ", "head of",
     "full-time", "full time", "permanent", "contract to hire",
     "part-time contractor",
+]
+
+# Domain exclusions — these are irrelevant fields even if they have "analyst"
+EXCLUDE_DOMAIN_WORDS = [
+    "cybersecurity", "cyber security", "security operations",
+    "network", "software engineer", "devops", "cloud engineer",
+    "machine learning engineer", "ai engineer", "hardware",
+    "mechanical", "electrical", "civil", "manufacturing",
 ]
 
 # ─────────────────────────────────────────────────────────────
@@ -116,18 +136,26 @@ def detect_cpt(description: str) -> Dict:
 
 def is_intern_role(title: str, description: str = "") -> bool:
     """
-    STRICT: the job TITLE must contain an intern signal.
-    We no longer accept 'analyst in description' as a fallback —
-    that was letting full-time roles through.
+    STRICT: title must have BOTH an intern signal AND a relevant role keyword.
+    Prevents "Engineering Intern", "Cybersecurity Intern", etc.
     """
     t = title.lower()
 
-    # Must have an explicit intern signal in title
+    # Must have explicit intern signal in title
     if not any(s in t for s in INTERN_TITLE_SIGNALS):
+        return False
+
+    # Must have a relevant business/data/analytics role keyword in title
+    if not any(kw in t for kw in ROLE_KEYWORDS):
         return False
 
     # Exclude senior/FT roles
     for bad in EXCLUDE_TITLE_WORDS:
+        if bad in t:
+            return False
+
+    # Exclude irrelevant technical domains
+    for bad in EXCLUDE_DOMAIN_WORDS:
         if bad in t:
             return False
 

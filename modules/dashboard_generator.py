@@ -1,3 +1,4 @@
+import os
 """
 Module 5b: Dashboard Generator
 ──────────────────────────────────────────────────────────────
@@ -24,7 +25,7 @@ from typing import Dict, List
 logger = logging.getLogger(__name__)
 
 
-def build_dashboard(top_jobs: List[Dict], run_date: str) -> str:
+def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") -> str:
     """Generate the full single-file HTML dashboard."""
 
     jobs_json = json.dumps(top_jobs, default=str)
@@ -186,6 +187,7 @@ def build_dashboard(top_jobs: List[Dict], run_date: str) -> str:
 
 <script>
 const ALL_JOBS = {jobs_json};
+window.GITHUB_REPO = "{github_repo}";
 
 // ── Feedback persistence (localStorage for instant UX) ───────
 function getStatus(id) {{
@@ -235,8 +237,14 @@ function renderCard(job, rank) {{
         ).join('')
       }}</div>` : '';
 
-  const resumeHtml = job.resume_path
-    ? `<span class="resume-link">📄 Resume ready</span>` : '';
+  // Build GitHub raw URL for the resume if available
+  const repoName = window.GITHUB_REPO || '';
+  const resumeUrl = job.resume_path && repoName
+    ? `https://raw.githubusercontent.com/${{repoName}}/main/${{job.resume_path}}`
+    : null;
+  const resumeHtml = resumeUrl
+    ? `<a href="${{resumeUrl}}" target="_blank" download class="resume-link">📄 Download Resume</a>`
+    : job.resume_path ? `<span class="resume-link">📄 Resume ready (push to view)</span>` : '';
 
   const url = job.apply_url || '#';
   const urlPreview = url.length > 55 ? url.slice(0, 55) + '…' : url;
@@ -403,6 +411,7 @@ function showToast(msg) {{
   setTimeout(() => t.classList.remove('show'), 2200);
 }}
 
+// ── GitHub Repo (injected at build time for resume URLs) ─────
 // ── Init ──────────────────────────────────────────────────────
 applyFilters();
 </script>
@@ -430,7 +439,8 @@ class DashboardGenerator:
         run_date = top_data.get("run_date", datetime.now(timezone.utc).isoformat())
 
         Path("docs").mkdir(exist_ok=True)
-        html = build_dashboard(top_jobs, run_date)
+        github_repo = os.environ.get("GITHUB_REPO", "ahrar11/job-hunter")
+        html = build_dashboard(top_jobs, run_date, github_repo)
 
         out_path = Path("docs/index.html")
         with open(out_path, "w") as f:

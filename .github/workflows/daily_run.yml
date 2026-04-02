@@ -25,7 +25,7 @@ jobs:
       - name: Install Python dependencies
         run: pip install -r requirements.txt
 
-      - name: Install Node.js docx package (local install so require() finds it)
+      - name: Install Node.js docx package (local so require() finds it)
         run: |
           cd scripts
           npm init -y
@@ -40,9 +40,10 @@ jobs:
           GEMINI_API_KEY:    ${{ secrets.GEMINI_API_KEY }}
           RESEND_API_KEY:    ${{ secrets.RESEND_API_KEY }}
           RESEND_FROM_EMAIL: ${{ secrets.RESEND_FROM_EMAIL }}
+          GITHUB_REPO:       ${{ github.repository }}
         run: python main.py
 
-      - name: Commit updated files
+      - name: Commit updated files including tailored resumes
         run: |
           git config user.name  "Job Hunter Bot"
           git config user.email "bot@job-hunter.local"
@@ -55,7 +56,8 @@ jobs:
             data/run_log.txt \
             data/digest.html \
             docs/index.html \
-            config/job_titles.json || true
+            config/job_titles.json \
+            resumes/ || true
           git diff --staged --quiet || \
             git commit -m "chore: daily run $(date -u +%Y-%m-%d)"
           git push

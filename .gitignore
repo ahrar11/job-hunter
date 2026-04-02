@@ -3,8 +3,10 @@ __pycache__/
 *.pyc
 *.pyo
 .DS_Store
-resumes/*.docx
 data/run_log.txt
 *.egg-info/
 .venv/
 venv/
+scripts/node_modules/
+scripts/package-lock.json
+scripts/package.json
