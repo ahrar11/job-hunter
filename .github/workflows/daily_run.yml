@@ -2,7 +2,7 @@ name: Daily Job Hunter
 
 on:
   schedule:
-    - cron: "0 12 * * *"   # 7:00 AM EST = 12:00 UTC
+    - cron: "0 2 * * *"   # 9:00 PM EST = 02:00 UTC
   workflow_dispatch:
 
 jobs:
