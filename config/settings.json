@@ -20,9 +20,13 @@
     "preferred_locations": ["Remote", "Boston, MA", "New York, NY", "San Francisco, CA", "Seattle, WA"]
   },
   "email": {
-    "to": "ahrar@bu.edu",
-    "from": "",
+    "to": "ahrarkarim@gmail.com",
+    "resend_from": "onboarding@resend.dev",
     "subject_prefix": "[Job Hunter]"
+  },
+  "resume_tailor": {
+    "enabled": false,
+    "_note": "Set to true to re-enable per-job resume tailoring (Module 3)"
   },
   "learning": {
     "feedback_file": "data/feedback_history.json",

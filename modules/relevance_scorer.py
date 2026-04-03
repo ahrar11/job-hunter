@@ -15,6 +15,7 @@ logger = logging.getLogger(__name__)
 
 TOP_N      = 20
 CHUNK_SIZE = 10
+MIN_SCORE  = 60   # Jobs below this score are excluded from the dashboard
 
 
 def build_profile_summary(resume: Dict) -> str:
@@ -70,18 +71,24 @@ def apply_feedback_boost(score: int, job: Dict, boosts: Dict) -> int:
     return max(0, min(100, score + boost))
 
 
-CHUNK_PROMPT = """Score these internship postings for an MS Business Analytics student.
+CHUNK_PROMPT = """You are scoring internship postings for fit with a specific candidate.
 
-CANDIDATE:
+CANDIDATE PROFILE:
 {profile}
 
-RULES:
-- Score 0 if role requires US Citizenship or Permanent Residency
-- Score 75-100 for strong match: Python, SQL, Tableau, Power BI, BigQuery, analytics roles
-- Score 50-74 for partial match
-- Score 1-49 for weak match or wrong domain
+SCORING RUBRIC (be generous — this candidate is broadly qualified for analytics/data/business roles):
 
-JOBS:
+90-100: Perfect match — role explicitly mentions multiple candidate skills (Python, SQL, Tableau, Power BI, BigQuery), is an analytics/data/business analyst internship, and is in a preferred location or remote. Sponsor-friendly.
+80-89:  Strong match — good skill overlap with the role, relevant analytics/data/business domain, reasonable location. Minor gaps are fine.
+70-79:  Good match — the role is in a related field (operations, strategy, marketing analytics, BI, consulting, product) and the candidate could perform well. At least some skill overlap.
+55-69:  Partial match — some relevance but the role leans into a different domain (e.g., pure finance, supply chain, or a niche area where the candidate has limited experience).
+30-54:  Weak match — role is in an unrelated domain, requires skills the candidate doesn't have, or is not an analytics/data role at all.
+1-29:   Poor match — fundamentally wrong domain (engineering, cybersecurity, mechanical, etc.) or the role title was misleading.
+0:      ONLY score 0 if the job description EXPLICITLY states it requires US Citizenship, Permanent Residency, security clearance, or explicitly excludes F-1/CPT/OPT candidates. Do NOT score 0 just because visa status is unmentioned — most internships accept CPT.
+
+IMPORTANT: If the job description is short or vague, score based on title and company fit. Do NOT penalize for lack of detail. A "Business Analyst Intern" at a reputable company with a vague description should still score 70+.
+
+JOBS TO SCORE:
 {jobs_json}
 
 Return ONLY a JSON array of exactly {n} objects in the same order:
@@ -170,8 +177,25 @@ class RelevanceScorer:
                 "concern":         concern,
             })
 
-        scored.sort(key=lambda j: j["relevance_score"], reverse=True)
-        top_jobs = scored[:self.top_n]
+        # Sort by: direct URLs first (at same score), then by score descending
+        scored.sort(key=lambda j: (
+            -(j["relevance_score"]),
+            0 if j.get("apply_url_quality") == "direct" else 1,
+        ))
+
+        # Filter out low-quality matches
+        min_score = self.settings.get("search", {}).get("min_score", MIN_SCORE)
+        qualified = [j for j in scored if j["relevance_score"] >= min_score]
+        logger.info("  %d/%d jobs meet minimum score threshold (%d)",
+                     len(qualified), len(scored), min_score)
+
+        # Warn about aggregator URLs
+        agg_count = sum(1 for j in qualified if j.get("apply_url_quality") == "aggregator")
+        if agg_count:
+            logger.info("  ⚠ %d jobs have aggregator redirect URLs (may require account creation)",
+                         agg_count)
+
+        top_jobs = qualified[:self.top_n]
 
         output = {
             "run_date":       raw.get("run_date"),

@@ -61,9 +61,14 @@ def run():
     # MODULE 3
     logger.info("\n▶  MODULE 3 — Resume Tailor")
     try:
-        from modules.resume_tailor import ResumeTailor
-        result = ResumeTailor().run()
-        logger.info(f"   ✓ {result.get('success', 0)}/{result.get('total', 0)} resumes generated")
+        with open("config/settings.json") as f:
+            _settings = json.load(f)
+        if _settings.get("resume_tailor", {}).get("enabled", True):
+            from modules.resume_tailor import ResumeTailor
+            result = ResumeTailor().run()
+            logger.info(f"   ✓ {result.get('success', 0)}/{result.get('total', 0)} resumes generated")
+        else:
+            logger.info("   ↩ Resume tailoring paused (resume_tailor.enabled = false in settings.json)")
     except Exception as e:
         logger.error(f"   ✗ Module 3 failed: {e}")
 

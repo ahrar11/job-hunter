@@ -190,11 +190,52 @@ def is_us_location(location: str) -> bool:
     return any(sig in loc for sig in US_LOCATION_SIGNALS)
 
 
+def classify_apply_url(url: str) -> str:
+    """
+    Classify the quality of an apply URL:
+      'direct'     — employer career page, Greenhouse, Lever, Jobvite, etc.
+      'aggregator' — redirects through a job board (Adzuna, Indeed, etc.)
+      'unknown'    — can't determine
+    """
+    if not url:
+        return "unknown"
+    from urllib.parse import urlparse
+    try:
+        domain = urlparse(url).netloc.lower().lstrip("www.")
+    except Exception:
+        return "unknown"
+
+    # Known direct ATS / employer domains
+    direct_signals = [
+        "greenhouse.io", "lever.co", "jobvite.com", "workday.com",
+        "myworkdayjobs.com", "icims.com", "taleo.net", "smartrecruiters.com",
+        "ultipro.com", "brassring.com", "careers-page.com", "ashbyhq.com",
+        "jobs.lever.co", "boards.greenhouse.io", "linkedin.com/jobs",
+    ]
+    if any(d in domain for d in direct_signals):
+        return "direct"
+
+    # Known aggregator redirect domains
+    agg_signals = [
+        "adzuna.com", "indeed.com", "ziprecruiter.com", "glassdoor.com",
+        "monster.com", "careerbuilder.com", "simplyhired.com", "jooble.org",
+        "talent.com", "lensa.com", "neuvoo.com", "jobrapido.com",
+    ]
+    if any(d in domain for d in agg_signals):
+        return "aggregator"
+    # Google Jobs redirect (not careers.google.com which is direct)
+    if "google.com" in domain and "careers" not in domain:
+        return "aggregator"
+
+    return "direct"  # Unknown domains are likely employer sites
+
+
 def build_job(
     title: str, company: str, location: str, description: str,
     apply_url: str, posted_at: Optional[str], source: str,
 ) -> Dict:
     cpt_info = detect_cpt(description)
+    url_quality = classify_apply_url(apply_url)
     return {
         "id":               make_id(company, title, apply_url),
         "title":            title.strip(),
@@ -202,6 +243,7 @@ def build_job(
         "location":         (location or "Not specified").strip(),
         "description":      description[:4000],
         "apply_url":        apply_url.strip(),
+        "apply_url_quality": url_quality,
         "posted_at":        posted_at,
         "source":           source,
         "fetched_at":       datetime.now(timezone.utc).isoformat(),

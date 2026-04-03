@@ -408,6 +408,9 @@ function renderCard(job, rank) {{
     ? '<span class="badge badge-yellow">🔗 Possible Connection</span>'
     : '<span class="badge badge-gray">No Connection</span>';
 
+  const urlBadge = job.apply_url_quality === 'aggregator'
+    ? '<span class="badge badge-yellow">↗ Redirect</span>' : '';
+
   const sourceMap = {{ greenhouse_api: 'Greenhouse', lever_api: 'Lever', jsearch: 'JSearch', adzuna: 'Adzuna' }};
   const sourceLabel = sourceMap[job.source] || job.source;
 
@@ -454,7 +457,7 @@ function renderCard(job, rank) {{
       '</div>' +
     '</div>' +
 
-    '<div class="badges">' + cptBadge + connBadge + '</div>' +
+    '<div class="badges">' + cptBadge + connBadge + urlBadge + '</div>' +
 
     (job.match_reason ? '<div class="match">"' + job.match_reason + '"</div>' : '') +
     (skillsHtml ? '<div class="skills">' + skillsHtml + '</div>' : '') +
