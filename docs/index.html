@@ -33,6 +33,29 @@
   .pill .num  { font-size: 22px; font-weight: 700; }
   .pill .lbl  { font-size: 11px; color: #9aaac8; margin-top: 2px; }
 
+  /* ── Apply Session Banner ── */
+  #session-banner { display: none; background: linear-gradient(135deg, #1e4080, #2E5FA3);
+      padding: 16px 32px; color: #fff; }
+  #session-banner.active { display: block; }
+  .session-inner { max-width: 900px; margin: 0 auto; display: flex;
+      align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .session-info { flex: 1; }
+  .session-info h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+  .session-info .session-detail { font-size: 13px; color: #b8c8e8; }
+  .session-progress { width: 200px; }
+  .progress-bar { background: rgba(255,255,255,.2); border-radius: 6px; height: 8px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 6px; transition: width .3s; }
+  .progress-text { font-size: 11px; color: #b8c8e8; margin-top: 4px; text-align: right; }
+  .session-actions { display: flex; gap: 8px; }
+  .btn-session { padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; transition: all .15s; }
+  .btn-session-next { background: var(--green); color: #fff; }
+  .btn-session-next:hover { background: #219a52; }
+  .btn-session-skip { background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }
+  .btn-session-skip:hover { background: rgba(255,255,255,.25); }
+  .btn-session-end { background: var(--red); color: #fff; }
+  .btn-session-end:hover { background: #c0392b; }
+
   /* ── Filters ── */
   .filters { background: var(--card); border-bottom: 1px solid var(--border);
               padding: 14px 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
@@ -42,6 +65,9 @@
   .filter-btn { padding: 7px 14px; border: 1px solid var(--border); background: #fff;
                  border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .15s; }
   .filter-btn:hover, .filter-btn.active { background: var(--brand); color: #fff; border-color: var(--brand); }
+  .btn-start-session { padding: 7px 16px; border: none; background: var(--green); color: #fff;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }
+  .btn-start-session:hover { background: #219a52; }
   select { padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
             font-size: 13px; background: #fff; cursor: pointer; }
 
@@ -53,12 +79,18 @@
   /* ── Job card ── */
   .card { background: var(--card); border-radius: var(--radius); padding: 20px 22px;
            border-left: 5px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.06);
-           transition: box-shadow .15s; }
+           transition: all .2s; position: relative; }
   .card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.10); }
   .card.connected-1  { border-left-color: var(--green); }
   .card.connected-2  { border-left-color: var(--yellow); }
   .card.status-applied { opacity: .55; }
   .card.status-skipped { display: none; }
+  .card.session-active { border-left-color: var(--brand); box-shadow: 0 0 0 2px var(--brand), 0 4px 14px rgba(46,95,163,.25); }
+  .card.session-done { opacity: .4; }
+
+  /* Selection checkbox */
+  .card-select { position: absolute; top: 12px; right: 12px; }
+  .card-select input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--brand); }
 
   .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
   .card-rank { font-size: 12px; color: var(--muted); font-weight: 600; margin-right: 6px; }
@@ -92,7 +124,8 @@
   /* Action row */
   .actions { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
   .btn-apply { background: var(--brand); color: #fff; padding: 7px 18px; border-radius: 6px;
-                text-decoration: none; font-size: 13px; font-weight: 600; transition: background .15s; }
+                text-decoration: none; font-size: 13px; font-weight: 600; transition: background .15s;
+                border: none; cursor: pointer; }
   .btn-apply:hover { background: #1e4080; }
   .btn-action { padding: 6px 14px; border: 1px solid var(--border); background: #fff;
                  border-radius: 6px; font-size: 12px; cursor: pointer; transition: all .15s; }
@@ -103,7 +136,7 @@
 
   .url-preview { font-size: 11px; color: var(--muted); flex: 1; overflow: hidden;
                   text-overflow: ellipsis; white-space: nowrap; }
-  .resume-link { font-size: 12px; color: var(--green); }
+  .resume-link { font-size: 12px; color: var(--green); text-decoration: none; }
 
   /* Connections list */
   .connections { margin-top: 8px; font-size: 12px; color: var(--muted); }
@@ -130,6 +163,25 @@
   <div class="stat-pills" id="stat-pills"></div>
 </header>
 
+<!-- Apply Session Banner (hidden until session starts) -->
+<div id="session-banner">
+  <div class="session-inner">
+    <div class="session-info">
+      <h2 id="session-title">Apply Session</h2>
+      <div class="session-detail" id="session-detail"></div>
+    </div>
+    <div class="session-progress">
+      <div class="progress-bar"><div class="progress-fill" id="session-progress-fill"></div></div>
+      <div class="progress-text" id="session-progress-text"></div>
+    </div>
+    <div class="session-actions">
+      <button class="btn-session btn-session-next" id="btn-session-applied" onclick="sessionMarkApplied()">Applied ✓</button>
+      <button class="btn-session btn-session-skip" id="btn-session-skip" onclick="sessionMarkSkipped()">Skip →</button>
+      <button class="btn-session btn-session-end" onclick="endSession()">End Session</button>
+    </div>
+  </div>
+</div>
+
 <div class="filters">
   <input type="text" id="search" placeholder="Search title, company, skill..." oninput="applyFilters()">
   <select id="sort" onchange="applyFilters()">
@@ -141,15 +193,17 @@
   <button class="filter-btn"       data-filter="connected" onclick="setFilter(this)">🔗 Connections</button>
   <button class="filter-btn"       data-filter="cpt"       onclick="setFilter(this)">✓ CPT</button>
   <button class="filter-btn"       data-filter="new"       onclick="setFilter(this)">New Only</button>
+  <button class="btn-start-session" id="btn-start-session" onclick="startSession()">🚀 Start Apply Session</button>
 </div>
 
 <div class="grid" id="grid"></div>
 <div id="toast"></div>
-<footer>Automated daily · Powered by Job Hunter Bot · <a href="https://github.com" style="color:var(--brand)">View repo</a></footer>
+<footer>Automated daily · Powered by Job Hunter Bot · <a href="https://github.com/ahrar11/job-hunter" style="color:var(--brand)">View repo</a></footer>
 
 <script>
 const ALL_JOBS = [{"id": "358e26beb6c6", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Boston, Suffolk County", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686663877?se=bOb-Dkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=FC064687D31A9593F3A3FA2B4BB48A6C6968B05B", "posted_at": "2026-04-01T21:10:48Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:15.897671+00:00", "status": "new", "connection_flag": "none", "relevance_score": 78, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 78, "match_reason": "Technology business analyst role in Boston (home base) with excellent match to Python, SQL, and analytics skills; F-1 CPT eligible location.", "skill_matches": ["Business Analysis", "Python", "SQL", "Power BI", "Analytics"], "concern": "Incomplete job description; confirm no citizenship requirement", "resume_path": "resumes/358e26beb6c6_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "0024a6ed237c", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Boston, Suffolk County", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686663877?se=-tYOEkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=FC064687D31A9593F3A3FA2B4BB48A6C6968B05B", "posted_at": "2026-04-01T21:10:48Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:20.844604+00:00", "status": "new", "connection_flag": "none", "relevance_score": 78, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 78, "match_reason": "Technology business analyst in Boston offering excellent fit with Python, SQL, Power BI, and analytics skills; ideal location for F-1 CPT student.", "skill_matches": ["Business Analysis", "Python", "SQL", "Power BI", "Analytics"], "concern": "Incomplete job description; duplicate posting", "resume_path": "resumes/0024a6ed237c_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "ca44cb39c37a", "title": "Data Science Intern- Summer 2026 - Morristown, NJ", "company": "crum  forster", "location": "Morris Twp, New Jersey", "description": "", "apply_url": "https://jobsearcher.com/jobs/2e197e8dacee02468d16eac31416fcebe0f0fb993bbee03b897220d186dc8df4", "posted_at": "2026-03-30T00:00:00.000Z", "source": "jsearch", "fetched_at": "2026-04-02T03:49:55.194227+00:00", "status": "new", "connection_flag": "none", "relevance_score": 75, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 75, "match_reason": "Data Science internship strongly matches Python, Pandas, Scikit-learn, and analytics expertise; New Jersey location acceptable for F-1 CPT.", "skill_matches": ["Python", "Pandas", "Scikit-learn", "Data Science", "Analytics"], "concern": "No job description provided; cannot verify citizenship requirements", "resume_path": "resumes/ca44cb39c37a_crum__forster_Data_Science_Intern-_Summer_20.docx", "resume_tailored": true, "connections": []}, {"id": "ad438884b66b", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Five Points, Wake County", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686674598?se=bOb-Dkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=222856CCB9CED4CF4A832FF51A51033C1CCAE085", "posted_at": "2026-04-01T21:13:28Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:15.897640+00:00", "status": "new", "connection_flag": "none", "relevance_score": 72, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 72, "match_reason": "Technology business analyst role with strong match to analytics skills; Wake County location acceptable for F-1 CPT; timing aligns with spring 2026.", "skill_matches": ["Business Analysis", "SQL", "Python", "Analytics"], "concern": "Incomplete job description limits full evaluation", "resume_path": "resumes/ad438884b66b_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "5585c33a000b", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Five Points, Wake County", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686674598?se=-tYOEkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=222856CCB9CED4CF4A832FF51A51033C1CCAE085", "posted_at": "2026-04-01T21:13:28Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:20.844575+00:00", "status": "new", "connection_flag": "none", "relevance_score": 72, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 72, "match_reason": "Technology business analyst in Wake County with strong alignment to Python, SQL, and analytics expertise; accessible for F-1 CPT.", "skill_matches": ["Business Analysis", "Python", "SQL", "Analytics"], "concern": "Incomplete job description; duplicate posting", "resume_path": "resumes/5585c33a000b_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "919c25f761fb", "title": "AI & Data Analytics Intern \u2014 Applications Engineering", "company": "EnerSys", "location": "Pennsylvania", "description": "", "apply_url": "https://www.jobleads.com/us/job/ai-data-analytics-intern-applications-engineering--bern-township--e03c4c21d4512fe52eaa0cd7b2f02897d", "posted_at": "2026-03-31T00:00:00.000Z", "source": "jsearch", "fetched_at": "2026-04-02T03:49:55.194257+00:00", "status": "new", "connection_flag": "none", "relevance_score": 72, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 72, "match_reason": "AI & Data Analytics role aligns with Python, Tableau, Power BI, and machine learning skills; Pennsylvania location is F-1 CPT eligible.", "skill_matches": ["Python", "AI", "Data Analytics", "Tableau", "Power BI"], "concern": "No job description provided; cannot verify exact requirements", "resume_path": "resumes/919c25f761fb_EnerSys_AI___Data_Analytics_Intern___A.docx", "resume_tailored": true, "connections": []}, {"id": "ff94d441a82d", "title": "Intern - Business Intelligence", "company": "SitusAMC", "location": "Bonnie, Utah County", "description": "SitusAMC is where the best and most passionate people come to transform our client's businesses and their own careers. Whether you're a real estate veteran, a passionate technologist, or looking to get your start, join us as we work together to realize opportunities for everyone, we proudly serve. At SitusAMC, we are looking to match your unique experience with one of our amazing careers, so that we can help you realize your potential and career growth within the Real Estate Industry. If you ar\u2026", "apply_url": "https://www.adzuna.com/land/ad/5678848467?se=3sr5Ekcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=034BE462ED2F359E44C98C4F39A0C20A89E85345", "posted_at": "2026-03-26T00:29:04Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:22.390573+00:00", "status": "new", "connection_flag": "none", "relevance_score": 72, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 72, "match_reason": "SitusAMC BI role aligns well with candidate's Tableau, Power BI, SQL, and analytics background; real estate analytics applicable.", "skill_matches": ["Tableau", "Power BI", "SQL", "Python"], "concern": "Incomplete job description limits detailed assessment", "resume_path": "resumes/ff94d441a82d_SitusAMC_Intern_-_Business_Intelligence.docx", "resume_tailored": true, "connections": []}, {"id": "4b42049a8fbb", "title": "IS Business Analyst Intern - spring 2026 at ABB Richmond, VA", "company": "ABB", "location": "Richmond, Virginia", "description": "IS Business Analyst Intern - spring 2026 job at ABB. Richmond, VA. At ABB, we help industries outrun - leaner and cleaner. Here, progress is an expectation - for you, your team, and the world. As a global market leader, we'll give you what you need to make it happen. It won't always be easy, growing takes grit. But at ABB, you'll never run alone. Run what runs the world.\n\nThis Position reports to:\nERP Manager, Business Solutions Manager\n\nAs an intern, you will have the opportunity to gain practical experience through various projects. Each day, you will acquire knowledge by performing tasks as directed. You will also showcase your skills by supporting ABB's operations and enhancing personal education/employment opportunities.\n\nThe work model for the role is onsite/hybrid in Richmond, VA.\n\nPlease note that no relocation assistance or stipend will be offered for this position. Candidates must reside within a 50-mile radius of the office location. Candidates are expected to manage their own commuting arrangements.\n\nYou will be mainly accountable for:\n\u2022 Assist in the creation and management of SharePoint sites to support collaboration and resource sharing among team members and adult learners.\n\u2022 Collaborate with stakeholders to gather requirements and identify business needs related to IT projects and training initiatives for IT tools like SAP.\n\u2022 Develop and create training curriculum and materials tailored for adult learners, focusing on effective use and understanding of IT tools such as SAP.\n\u2022 Facilitate training sessions and workshops to educate team members and stakeholders on SAP and other IT tools.\n\u2022 Analyze data using Excel to provide insights and support decision-making processes related to training effectiveness.\n\u2022 Develop and maintain Power BI dashboards and reports to visualize key performance indicators and metrics related to training programs.\n\u2022 Create engaging presentations in PowerPoint to communicate findings, recommendations, and project updates to stakeholders.\n\u2022 Support process improvement initiatives by identifying opportunities for optimization through data analysis and reporting.\nQualifications for the role:\n\u2022 Currently enrolled in a bachelor's or master's degree program in Information Technology, Business Administration, or related fields , in the United States.\n\u2022 Intern must have reliable transportation to and from the worksite.\n\u2022 Must be legally authorized to work in the United States without company sponsorship now and in the future.\n\u2022 Utilize critical thinking skills to analyze complex situations and develop strategic solutions.\n\u2022 Effectively organize and prioritize tasks to meet deadlines.\n\u2022 Exhibit the capability to manage several tasks at once while maintaining high standards of quality.\n\u2022 Collaborate with team members to convey ideas, share information, and provide updates on project progress.\n\nWhy ABB?\n\nWhat's in it for you\n\nWe want you to bring your full self to work-your ideas, your energy, your ambition. You'll have the tools and freedom to grow your skills, shape your path, and take on challenges that matter. Here, your work creates impact you can see and feel, every day.\n\nABB is an Equal Employment Opportunity and Affirmative Action employer for protected Veterans and Individuals with Disabilities at ABB.\n\nAll qualified applicants will receive consideration for employment without regard to their- sex (gender identity, gender expression, sexual orientation), marital status, citizenship, age, race and ethnicity, inclusive of traits historically associated with race or ethnicity, including but not limited to hair texture and protective hairstyles, color, religious creed, national origin, pregnancy, physical or mental disability, genetic information, protected Veteran status, or any other characteristic protected by federal and state law.\n\nFor more information regarding your (EEO) rights as an applicant, please visit the following websites:\n\nAs an Equal Employment Opportunity and Affirmative Actio", "apply_url": "https://leposhfamilyspa.com/job-library/job/is-business-analyst-intern-spring-2026-at-abb-richmond-va-ck1odWtjVFlzM0VaTU5wbTVMZmcyNnhYUHc9PQ==?utm_campaign=google_jobs_apply&utm_source=google_jobs_apply&utm_medium=organic", "posted_at": "2026-03-28T00:00:00.000Z", "source": "jsearch", "fetched_at": "2026-04-02T03:49:42.286113+00:00", "status": "new", "connection_flag": "none", "relevance_score": 62, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 62, "match_reason": "Business analyst role aligns with analytics background, but limited job description makes full assessment difficult; location and timing fit.", "skill_matches": ["Business Analysis", "Analytics"], "concern": "Incomplete job description; unclear if role requires citizenship", "resume_path": "resumes/4b42049a8fbb_ABB_IS_Business_Analyst_Intern_-_s.docx", "resume_tailored": true, "connections": []}, {"id": "95e72f8199c1", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Washington, D.C., US", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686688226?se=bOb-Dkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=13A2CE62C2EC64304D3E46F541551419B5AE5513", "posted_at": "2026-04-01T21:20:21Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:15.897614+00:00", "status": "new", "connection_flag": "none", "relevance_score": 62, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 62, "match_reason": "Technology business analyst role matches analytics skillset, but Washington D.C. location may have citizenship requirements; incomplete description limits assessment.", "skill_matches": ["Business Analysis", "SQL", "Analytics"], "concern": "D.C. location often requires US Citizenship; incomplete job details", "resume_path": "resumes/95e72f8199c1_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "e08fac2243d5", "title": "INTERN: Technology Business Analyst", "company": "Ryder System", "location": "Washington, D.C., US", "description": "_Job Seekers can review the Job Applicant Privacy Policy by clicking here (http://ryder.com/job-applicant-privacy-policy) ._ Job Description : Intern - Business Analyst JOB SUMMARY Jump start your IT career with Ryder Systems, Inc.! Ryder's Information Technology organization is strategically focused on growing the supply chain and transportation businesses through new technology-driven solutions that focus on optimizing transportation and supply chain networks. The Business Analyst Intern will\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686688226?se=-tYOEkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=13A2CE62C2EC64304D3E46F541551419B5AE5513", "posted_at": "2026-04-01T21:20:21Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:20.844533+00:00", "status": "new", "connection_flag": "none", "relevance_score": 62, "cpt_signal": "positive", "cpt_positive_hits": ["opt"], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 62, "match_reason": "Technology business analyst role matches analytics background, but D.C. location raises citizenship concerns; incomplete description.", "skill_matches": ["Business Analysis", "SQL", "Analytics"], "concern": "D.C. location typically requires US Citizenship; duplicate posting", "resume_path": "resumes/e08fac2243d5_Ryder_System_INTERN__Technology_Business_An.docx", "resume_tailored": true, "connections": []}, {"id": "b3d9fd565235", "title": "Business Solutions Project Analyst Intern, Summer/Fall 2026", "company": "The Walt Disney Company", "location": "Anaheim, Orange County", "description": "Job Posting Title: Business Solutions Project Analyst Intern, Summer/Fall 2026 Req ID: 10146091 Job Description: Business Solutions Project Analyst Intern About the Role & Program Through innovative storytelling and a culture of collaboration, Disney Live Entertainment creates, produces, and delivers remarkable and engaging entertainment experiences. From the intimate to the spectacular, our work can be seen at Disney theme parks, resort hotels, cruise ships and other locations the world over. \u2026", "apply_url": "https://www.adzuna.com/land/ad/5685171142?se=bOb-Dkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=F12EAEC3D450206659A5756C9C99757423178270", "posted_at": "2026-04-01T04:57:42Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:15.897806+00:00", "status": "new", "connection_flag": "none", "relevance_score": 60, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 60, "match_reason": "Disney role matches business analytics interest but limited technical depth described; entertainment industry relevant to analytics.", "skill_matches": ["Tableau", "Power BI"], "concern": "Incomplete job description; unclear technical requirements", "resume_path": "resumes/b3d9fd565235_The_Walt_Disney_Company_Business_Solutions_Project_Ana.docx", "resume_tailored": true, "connections": []}, {"id": "a871250fef85", "title": "Durham Channel Marketing Ops Intern \u2014 Summer 2026", "company": "Toshiba Global Commerce Solutions", "location": "Durham, North Carolina", "description": "", "apply_url": "https://jooble.org/jdp/-9033882120425963232", "posted_at": "2026-03-30T00:00:00.000Z", "source": "jsearch", "fetched_at": "2026-04-02T03:50:05.442362+00:00", "status": "new", "connection_flag": "none", "relevance_score": 45, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 45, "match_reason": "Marketing operations internship is outside analytics domain; limited skill match beyond general Excel and data skills.", "skill_matches": ["Excel"], "concern": "Marketing ops role misaligned with MS Business Analytics focus; no job description", "resume_path": "resumes/a871250fef85_Toshiba_Global_Commerce_Soluti_Durham_Channel_Marketing_Ops_I.docx", "resume_tailored": true, "connections": []}, {"id": "508f39ec629e", "title": "Retail Operations Analyst Intern", "company": "Trane Technologies", "location": "La Crosse, La Crosse County", "description": "Be a part of our mission! As a world leader in creating comfortable, sustainable, and efficient climate solutions for buildings, homes and transportation, it's our responsibility to put the planet first. For us at Trane Technologies (https://www.tranetechnologies.com/) , and through our businesses including Trane\u00ae (http://www.trane.com/index.html) and Thermo King (http://www.thermoking.com/na/en.html) , sustainability is not just how we do business-it is our business. Do you dare to look at the\u2026", "apply_url": "https://www.adzuna.com/land/ad/5684850940?se=7FriE0cu8RGQdJisE5bRUA&utm_medium=api&utm_source=5eeeff4a&v=35A3AA52ADAAB7C3AD6E122B60F4C492D840526D", "posted_at": "2026-04-01T00:37:58Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:23.739891+00:00", "status": "new", "connection_flag": "none", "relevance_score": 45, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 45, "match_reason": "Trane operations role has some analytics relevance but appears operations-focused rather than data-analytics focused; weak skill alignment.", "skill_matches": ["Excel"], "concern": "Limited technical analytics requirements evident", "resume_path": "resumes/508f39ec629e_Trane_Technologies_Retail_Operations_Analyst_Inte.docx", "resume_tailored": true, "connections": []}, {"id": "f0fbfed57c43", "title": "Operations Financial Analyst Intern (Summer 2026)", "company": "BAE Systems", "location": "Nashua, Hillsborough County", "description": "Job Description Full-time onsite: Because of the need for consistent, in-person collaboration and/or the requirement to perform all work onsite due to the nature of this particular role, it will be performed fulltime on site. This means work will be conducted on location at a BAE Systems facility 100% of the time. Electronic Systems: You don t see it, but it s there. Our employees work on the world s most advanced electronics from saving emissions in the City of Lights to powering the Mars Rove\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686705997?se=bOb-Dkcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=967DA8ED8BC7BDB9592E86189A79FB468AD4D255", "posted_at": "2026-04-01T22:09:10Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:15.897581+00:00", "status": "new", "connection_flag": "none", "relevance_score": 0, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 0, "match_reason": "BAE Systems defense contractor role requires US Citizenship or Security Clearance eligibility.", "skill_matches": [], "concern": "F-1 visa ineligible - requires citizenship/clearance", "resume_path": "resumes/f0fbfed57c43_BAE_Systems_Operations_Financial_Analyst_I.docx", "resume_tailored": true, "connections": []}, {"id": "14de5629bb01", "title": "Mission Data Analyst Engineering Intern", "company": "SAIC", "location": "El Segundo, Los Angeles County", "description": "Job ID: 2610846 Location: El Segundo, CA, US Date Posted: 2026-03-31 Category: Student Subcategory: Intern Schedule: Casual (includes On-Call and Temporary) Shift: Day Job Travel: Yes - 10% of the time Minimum Clearance Required: None Clearance Level Must Be Able to Obtain: TS/SCI with Poly Potential for Remote Work: ORA_ON_SITE Description SAIC has an opening for a Mission Data Analyst Engineering Intern who is willing to gain knowledge of government and SAIC Launch Management processes to ass\u2026", "apply_url": "https://www.adzuna.com/land/ad/5685068110?se=HA0TEEcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=3B3C84506314748A2033886705128859316FF931", "posted_at": "2026-04-01T03:01:33Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:17.569406+00:00", "status": "new", "connection_flag": "none", "relevance_score": 0, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 0, "match_reason": "SAIC defense contractor requires TS/SCI security clearance which requires US Citizenship.", "skill_matches": [], "concern": "F-1 visa ineligible - requires security clearance", "resume_path": "resumes/14de5629bb01_SAIC_Mission_Data_Analyst_Engineeri.docx", "resume_tailored": true, "connections": []}, {"id": "847f37bde7ec", "title": "Data Analyst, Intern with Security Clearance", "company": "Booz Allen Hamilton", "location": "Lexington, Middlesex County", "description": "Job Number: R0235629 Data Analyst, Intern The Opportunity: As a data analyst, you love diving into data and turning it into meaningful insights. With the abundance of structured and unstructured data, you understand the importance of transforming complex data sets into useful information to solve challenges. As a data analyst at Booz Allen, you can use your skills to support a mission and use data for good. This internship program is designed to provide participants with hands-on experience, pr\u2026", "apply_url": "https://www.adzuna.com/land/ad/5684617569?se=HA0TEEcu8RGWgpwCInIcJQ&utm_medium=api&utm_source=5eeeff4a&v=E5B85CA71E1D32A7E15C9E9DCF27A65AA3722A8C", "posted_at": "2026-03-31T20:45:47Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:17.569463+00:00", "status": "new", "connection_flag": "none", "relevance_score": 0, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 0, "match_reason": "Booz Allen Hamilton defense/intelligence contractor typically requires US Citizenship or clearance eligibility.", "skill_matches": [], "concern": "F-1 visa ineligible - defense sector clearance requirement", "resume_path": "resumes/847f37bde7ec_Booz_Allen_Hamilton_Data_Analyst__Intern_with_Secu.docx", "resume_tailored": true, "connections": []}, {"id": "f66fa69d127e", "title": "Operations Financial Analyst Intern (Summer 2026)", "company": "BAE Systems", "location": "Nashua, Hillsborough County", "description": "Job Description Full-time onsite: Because of the need for consistent, in-person collaboration and/or the requirement to perform all work onsite due to the nature of this particular role, it will be performed fulltime on site. This means work will be conducted on location at a BAE Systems facility 100% of the time. Electronic Systems: You don t see it, but it s there. Our employees work on the world s most advanced electronics from saving emissions in the City of Lights to powering the Mars Rove\u2026", "apply_url": "https://www.adzuna.com/land/ad/5686705997?se=7FriE0cu8RGQdJisE5bRUA&utm_medium=api&utm_source=5eeeff4a&v=967DA8ED8BC7BDB9592E86189A79FB468AD4D255", "posted_at": "2026-04-01T22:09:10Z", "source": "adzuna", "fetched_at": "2026-04-02T03:50:23.739843+00:00", "status": "new", "connection_flag": "none", "relevance_score": 0, "cpt_signal": "neutral", "cpt_positive_hits": [], "cpt_negative_hits": [], "summer_2026_mentioned": false, "raw_score": 0, "match_reason": "BAE Systems defense contractor role requires US Citizenship or Security Clearance eligibility.", "skill_matches": [], "concern": "F-1 visa ineligible - requires citizenship/clearance", "resume_path": "resumes/f66fa69d127e_BAE_Systems_Operations_Financial_Analyst_I.docx", "resume_tailored": true, "connections": []}];
 window.GITHUB_REPO = "ahrar11/job-hunter";
+window.GITHUB_TOKEN = "test";
 
 // ── Feedback persistence (localStorage for instant UX) ───────
 function getStatus(id) {
@@ -164,6 +218,138 @@ function scoreColor(s) {
   return s >= 75 ? '#27ae60' : s >= 55 ? '#f39c12' : '#e74c3c';
 }
 
+// ── Resume URL builder ────────────────────────────────────────
+function getResumeUrl(job) {
+  const repoName = window.GITHUB_REPO || '';
+  if (job.resume_path && repoName) {
+    return 'https://raw.githubusercontent.com/' + repoName + '/main/' + job.resume_path;
+  }
+  return null;
+}
+
+// ── Trigger resume download ───────────────────────────────────
+function downloadResume(job) {
+  const url = getResumeUrl(job);
+  if (!url) return;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// ── Open job + download resume (single action) ───────────────
+function openAndApply(jobId) {
+  const job = ALL_JOBS.find(j => j.id === jobId);
+  if (!job) return;
+  // Open the apply page — Simplify will auto-fill
+  if (job.apply_url) window.open(job.apply_url, '_blank');
+  // Auto-download the tailored resume
+  downloadResume(job);
+  showToast('Opened application — Simplify will auto-fill. Resume downloading...');
+}
+
+// ══════════════════════════════════════════════════════════════
+// APPLY SESSION — step through jobs one by one
+// ══════════════════════════════════════════════════════════════
+let session = { active: false, queue: [], current: 0, applied: 0, skipped: 0 };
+
+function startSession() {
+  // Build queue from currently visible "new" jobs
+  const newJobs = ALL_JOBS.filter(j => getStatus(j.id) === 'new');
+  if (newJobs.length === 0) {
+    showToast('No new jobs to apply to!');
+    return;
+  }
+
+  session = { active: true, queue: newJobs, current: 0, applied: 0, skipped: 0 };
+
+  // Show banner
+  document.getElementById('session-banner').classList.add('active');
+  document.getElementById('btn-start-session').style.display = 'none';
+
+  // Start first job
+  loadSessionJob();
+}
+
+function loadSessionJob() {
+  if (session.current >= session.queue.length) {
+    endSession();
+    return;
+  }
+
+  const job = session.queue[session.current];
+  const total = session.queue.length;
+  const done = session.applied + session.skipped;
+
+  // Update banner
+  document.getElementById('session-title').textContent =
+    'Applying: ' + job.company + ' — ' + job.title;
+  document.getElementById('session-detail').textContent =
+    'Job ' + (session.current + 1) + ' of ' + total +
+    ' · ' + session.applied + ' applied · ' + session.skipped + ' skipped';
+
+  // Progress bar
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('session-progress-fill').style.width = pct + '%';
+  document.getElementById('session-progress-text').textContent = pct + '% complete';
+
+  // Highlight current card and scroll to it
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('session-active'));
+  const card = document.getElementById('card-' + job.id);
+  if (card) {
+    card.classList.add('session-active');
+    card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  // Open apply page + download resume
+  openAndApply(job.id);
+}
+
+function sessionMarkApplied() {
+  if (!session.active) return;
+  const job = session.queue[session.current];
+  markJob(job.id, 'applied');
+  session.applied++;
+
+  const card = document.getElementById('card-' + job.id);
+  if (card) { card.classList.remove('session-active'); card.classList.add('session-done'); }
+
+  session.current++;
+  loadSessionJob();
+}
+
+function sessionMarkSkipped() {
+  if (!session.active) return;
+  const job = session.queue[session.current];
+  markJob(job.id, 'skipped');
+  session.skipped++;
+
+  const card = document.getElementById('card-' + job.id);
+  if (card) { card.classList.remove('session-active'); card.classList.add('session-done'); }
+
+  session.current++;
+  loadSessionJob();
+}
+
+function endSession() {
+  session.active = false;
+  document.getElementById('session-banner').classList.remove('active');
+  document.getElementById('btn-start-session').style.display = '';
+
+  // Clean up card highlights
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('session-active', 'session-done');
+  });
+
+  if (session.applied + session.skipped > 0) {
+    showToast('Session complete! ' + session.applied + ' applied, ' + session.skipped + ' skipped.');
+  }
+  applyFilters();
+}
+
 // ── Render one card ───────────────────────────────────────────
 function renderCard(job, rank) {
   const status = getStatus(job.id);
@@ -172,101 +358,86 @@ function renderCard(job, rank) {
   const score = job.relevance_score || 0;
   const col   = scoreColor(score);
 
-  // CPT badge
   const cptBadge = job.cpt_signal === 'positive'
     ? '<span class="badge badge-green">✓ CPT Friendly</span>'
     : job.cpt_signal === 'negative'
     ? '<span class="badge badge-red">✗ No Sponsorship</span>'
     : '<span class="badge badge-yellow">? CPT Unconfirmed</span>';
 
-  // Connection badge
   const connBadge = job.connection_flag === '1st_degree'
-    ? `<span class="badge badge-green">🔗 1st Degree</span>`
+    ? '<span class="badge badge-green">🔗 1st Degree</span>'
     : job.connection_flag === 'possible_2nd'
-    ? `<span class="badge badge-yellow">🔗 Possible Connection</span>`
-    : `<span class="badge badge-gray">No Connection</span>`;
+    ? '<span class="badge badge-yellow">🔗 Possible Connection</span>'
+    : '<span class="badge badge-gray">No Connection</span>';
 
   const sourceMap = { greenhouse_api: 'Greenhouse', lever_api: 'Lever', jsearch: 'JSearch', adzuna: 'Adzuna' };
   const sourceLabel = sourceMap[job.source] || job.source;
 
   const skillsHtml = (job.skill_matches || []).slice(0, 6).map(s =>
-    `<span class="skill-pill">${s}</span>`).join('');
+    '<span class="skill-pill">' + s + '</span>').join('');
 
   const connectionsHtml = (job.connections || []).length > 0
-    ? `<div class="connections">Connections: ${
+    ? '<div class="connections">Connections: ' +
         (job.connections || []).slice(0, 4).map(c =>
-          `<span class="conn-item">👤 ${c.name}${c.position ? ' · ' + c.position : ''}</span>`
-        ).join('')
-      }</div>` : '';
+          '<span class="conn-item">👤 ' + c.name + (c.position ? ' · ' + c.position : '') + '</span>'
+        ).join('') +
+      '</div>' : '';
 
-  // Build GitHub raw URL for the resume if available
-  const repoName = window.GITHUB_REPO || '';
-  const resumeUrl = job.resume_path && repoName
-    ? `https://raw.githubusercontent.com/${repoName}/main/${job.resume_path}`
-    : null;
+  const resumeUrl = getResumeUrl(job);
   const resumeHtml = resumeUrl
-    ? `<a href="${resumeUrl}" target="_blank" download class="resume-link">📄 Download Resume</a>`
-    : job.resume_path ? `<span class="resume-link">📄 Resume ready (push to view)</span>` : '';
+    ? '<a href="' + resumeUrl + '" target="_blank" download class="resume-link">📄 Download Resume</a>'
+    : job.resume_path ? '<span class="resume-link">📄 Resume ready</span>' : '';
 
   const url = job.apply_url || '#';
-  const urlPreview = url.length > 55 ? url.slice(0, 55) + '…' : url;
+  const urlPreview = url.length > 55 ? url.slice(0, 55) + '...' : url;
 
-  const btnClass = status === 'new' ? '' :
-    status === 'applied' ? 'active-applied' :
-    status === 'saved'   ? 'active-saved'   : 'active-skipped';
+  return '<div class="card ' + connClass + ' status-' + status + '"' +
+       ' id="card-' + job.id + '"' +
+       ' data-score="' + score + '"' +
+       ' data-connection="' + job.connection_flag + '"' +
+       ' data-cpt="' + job.cpt_signal + '"' +
+       ' data-status="' + status + '">' +
 
-  return `
-  <div class="card ${connClass} status-${status}"
-       id="card-${job.id}"
-       data-score="${score}"
-       data-connection="${job.connection_flag}"
-       data-cpt="${job.cpt_signal}"
-       data-status="${status}"
-       data-search="${[job.title, job.company, job.location, ...(job.skill_matches||[])].join(' ').toLowerCase()}">
+    '<div class="card-top">' +
+      '<div style="flex:1">' +
+        '<div>' +
+          '<span class="card-rank">#' + rank + '</span>' +
+          '<span class="card-title">' + job.title + '</span>' +
+        '</div>' +
+        '<div class="card-company">' +
+          '<strong>' + job.company + '</strong>' +
+          ' · ' + (job.location || 'Remote / TBD') +
+          ' · <span style="font-size:11px;color:#9aaac8">via ' + sourceLabel + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="score-wrap">' +
+        '<div class="score-bar"><div class="score-fill" style="width:' + score + '%;background:' + col + '"></div></div>' +
+        '<span class="score-num">' + score + '</span>' +
+      '</div>' +
+    '</div>' +
 
-    <div class="card-top">
-      <div style="flex:1">
-        <div>
-          <span class="card-rank">#${rank}</span>
-          <span class="card-title">${job.title}</span>
-        </div>
-        <div class="card-company">
-          <strong>${job.company}</strong>
-          &nbsp;·&nbsp;${job.location || 'Remote / TBD'}
-          &nbsp;·&nbsp;<span style="font-size:11px;color:#9aaac8">via ${sourceLabel}</span>
-        </div>
-      </div>
-      <div class="score-wrap">
-        <div class="score-bar">
-          <div class="score-fill" style="width:${score}%;background:${col}"></div>
-        </div>
-        <span class="score-num">${score}</span>
-      </div>
-    </div>
+    '<div class="badges">' + cptBadge + connBadge + '</div>' +
 
-    <div class="badges">
-      ${cptBadge}
-      ${connBadge}
-    </div>
+    (job.match_reason ? '<div class="match">"' + job.match_reason + '"</div>' : '') +
+    (skillsHtml ? '<div class="skills">' + skillsHtml + '</div>' : '') +
+    connectionsHtml +
+    (job.concern ? '<div style="margin-top:6px;font-size:12px;color:#adb5bd">⚠ ' + job.concern + '</div>' : '') +
 
-    ${job.match_reason ? `<div class="match">"${job.match_reason}"</div>` : ''}
-
-    ${skillsHtml ? `<div class="skills">${skillsHtml}</div>` : ''}
-    ${connectionsHtml}
-    ${job.concern ? `<div style="margin-top:6px;font-size:12px;color:#adb5bd">⚠ ${job.concern}</div>` : ''}
-
-    <div class="actions">
-      <a href="${url}" target="_blank" class="btn-apply">Apply Now →</a>
-      ${resumeHtml}
-      <button class="btn-action ${status==='applied'?'active-applied':''}"
-              onclick="markJob('${job.id}','applied')">✓ Applied</button>
-      <button class="btn-action ${status==='saved'?'active-saved':''}"
-              onclick="markJob('${job.id}','saved')">⭐ Save</button>
-      <button class="btn-action ${status==='skipped'?'active-skipped':''}"
-              onclick="markJob('${job.id}','skipped')">✕ Skip</button>
-      <span class="url-preview">${urlPreview}</span>
-    </div>
-  </div>`;
+    '<div class="actions">' +
+      '<button class="btn-apply" onclick="openAndApply(\'' + job.id + '\')">Apply Now →</button>' +
+      resumeHtml +
+      '<button class="btn-action ' + (status==='applied'?'active-applied':'') + '"' +
+              ' onclick="markJob(\'' + job.id + '\',\'applied\')">' +
+              '✓ Applied</button>' +
+      '<button class="btn-action ' + (status==='saved'?'active-saved':'') + '"' +
+              ' onclick="markJob(\'' + job.id + '\',\'saved\')">' +
+              '⭐ Save</button>' +
+      '<button class="btn-action ' + (status==='skipped'?'active-skipped':'') + '"' +
+              ' onclick="markJob(\'' + job.id + '\',\'skipped\')">' +
+              '✕ Skip</button>' +
+      '<span class="url-preview">' + urlPreview + '</span>' +
+    '</div>' +
+  '</div>';
 }
 
 // ── Render all cards ──────────────────────────────────────────
@@ -286,13 +457,17 @@ function updateStats(jobs) {
   const connected = jobs.filter(j => j.connection_flag !== 'none').length;
   const cptPos    = jobs.filter(j => j.cpt_signal === 'positive').length;
   const applied   = jobs.filter(j => getStatus(j.id) === 'applied').length;
+  const newCount  = jobs.filter(j => getStatus(j.id) === 'new').length;
 
-  document.getElementById('stat-pills').innerHTML = `
-    <div class="pill"><div class="num">${total}</div><div class="lbl">Roles</div></div>
-    <div class="pill"><div class="num">${connected}</div><div class="lbl">Connections</div></div>
-    <div class="pill"><div class="num">${cptPos}</div><div class="lbl">CPT ✓</div></div>
-    <div class="pill"><div class="num">${applied}</div><div class="lbl">Applied</div></div>
-  `;
+  document.getElementById('stat-pills').innerHTML =
+    '<div class="pill"><div class="num">' + total + '</div><div class="lbl">Roles</div></div>' +
+    '<div class="pill"><div class="num">' + connected + '</div><div class="lbl">Connections</div></div>' +
+    '<div class="pill"><div class="num">' + cptPos + '</div><div class="lbl">CPT ✓</div></div>' +
+    '<div class="pill"><div class="num">' + applied + '</div><div class="lbl">Applied</div></div>';
+
+  // Update start session button with count
+  const btn = document.getElementById('btn-start-session');
+  if (btn) btn.textContent = '🚀 Start Apply Session (' + newCount + ' new)';
 }
 
 // ── Filter & sort ─────────────────────────────────────────────
@@ -310,12 +485,10 @@ function applyFilters() {
 
   let jobs = [...ALL_JOBS];
 
-  // Filter
   if (activeFilter === 'connected') jobs = jobs.filter(j => j.connection_flag !== 'none');
   if (activeFilter === 'cpt')       jobs = jobs.filter(j => j.cpt_signal === 'positive');
   if (activeFilter === 'new')       jobs = jobs.filter(j => getStatus(j.id) === 'new');
 
-  // Search
   if (q) {
     jobs = jobs.filter(j => {
       const haystack = [j.title, j.company, j.location, ...(j.skill_matches || [])].join(' ').toLowerCase();
@@ -323,7 +496,6 @@ function applyFilters() {
     });
   }
 
-  // Sort
   if (sort === 'score') {
     jobs.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
   } else if (sort === 'connection') {
@@ -339,6 +511,70 @@ function applyFilters() {
   renderAll(jobs);
 }
 
+// ── GitHub feedback sync ──────────────────────────────────────
+async function syncFeedbackToGitHub(jobId, status) {
+  const repo = window.GITHUB_REPO;
+  const token = window.GITHUB_TOKEN;
+  if (!repo || !token) return;
+
+  const apiBase = 'https://api.github.com/repos/' + repo;
+  const filePath = 'data/feedback_history.json';
+  const url = apiBase + '/contents/' + filePath;
+
+  try {
+    const getResp = await fetch(url, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github.v3+json' }
+    });
+
+    let existing = [];
+    let sha = null;
+
+    if (getResp.ok) {
+      const fileData = await getResp.json();
+      sha = fileData.sha;
+      const decoded = atob(fileData.content.replace(/\n/g, ''));
+      existing = JSON.parse(decoded);
+    }
+
+    const job = ALL_JOBS.find(j => j.id === jobId) || {};
+
+    existing = existing.filter(e => e.job_id !== jobId);
+    existing.push({
+      job_id:    jobId,
+      title:     job.title || '',
+      company:   job.company || '',
+      source:    job.source || '',
+      status:    status,
+      score:     job.relevance_score || null,
+      logged_at: new Date().toISOString()
+    });
+
+    const body = {
+      message: 'feedback: ' + status + ' ' + (job.company || '') + ' - ' + (job.title || ''),
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(existing, null, 2)))),
+      sha: sha
+    };
+
+    const putResp = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (putResp.ok) {
+      console.log('Feedback synced to GitHub:', jobId, status);
+    } else {
+      console.warn('GitHub sync failed:', await putResp.text());
+    }
+  } catch (err) {
+    console.warn('GitHub sync error:', err);
+  }
+}
+
 // ── Mark job status ───────────────────────────────────────────
 function markJob(id, status) {
   setStatus(id, status);
@@ -346,7 +582,6 @@ function markJob(id, status) {
   const card = document.getElementById('card-' + id);
   if (card) {
     card.dataset.status = status;
-    // Update button states
     card.querySelectorAll('.btn-action').forEach(b => {
       b.classList.remove('active-applied', 'active-saved', 'active-skipped');
     });
@@ -359,10 +594,13 @@ function markJob(id, status) {
     if (status === 'skipped') card.style.display = 'none';
   }
 
-  showToast(status === 'applied' ? '✓ Marked as Applied!'
-           : status === 'saved'   ? '⭐ Saved!'
-           : '✕ Skipped');
+  if (!session.active) {
+    showToast(status === 'applied' ? '✓ Marked as Applied!'
+             : status === 'saved'   ? '⭐ Saved!'
+             : '✕ Skipped');
+  }
   updateStats(ALL_JOBS);
+  syncFeedbackToGitHub(id, status);
 }
 
 // ── Toast ─────────────────────────────────────────────────────
@@ -373,7 +611,6 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// ── GitHub Repo (injected at build time for resume URLs) ─────
 // ── Init ──────────────────────────────────────────────────────
 applyFilters();
 </script>

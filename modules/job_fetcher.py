@@ -519,10 +519,24 @@ def save_seen_ids(seen: set, path: str = "data/seen_jobs.json"):
 
 def deduplicate(jobs: List[Dict], seen_ids: set) -> List[Dict]:
     unique: Dict[str, Dict] = {}
+    # Secondary dedup key: normalized company+title to collapse the same job
+    # posted with different tracking URLs (common with Adzuna, JSearch)
+    seen_titles: Dict[str, str] = {}  # "company|title" → first job id
+
     for job in jobs:
         jid = job["id"]
-        if jid not in seen_ids and jid not in unique:
-            unique[jid] = job
+        if jid in seen_ids or jid in unique:
+            continue
+
+        # Collapse duplicates that share the same company + title
+        dedup_key = f"{job['company'].lower().strip()}|{job['title'].lower().strip()}"
+        if dedup_key in seen_titles:
+            # Keep the existing one — skip this duplicate
+            continue
+
+        seen_titles[dedup_key] = jid
+        unique[jid] = job
+
     return list(unique.values())
 
 

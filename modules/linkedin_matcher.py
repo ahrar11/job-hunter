@@ -129,11 +129,28 @@ def load_connections(csv_path: str = "data/linkedin_connections.csv") -> List[Di
 
     connections = []
     with open(p, newline="", encoding="utf-8-sig") as f:
-        # LinkedIn CSV sometimes has a 3-line header — skip non-data rows
-        reader = csv.DictReader(f)
+        # LinkedIn CSV has 3 metadata lines before the real headers:
+        #   Line 1: "Notes:,,,,,,"
+        #   Line 2: disclaimer text
+        #   Line 3: empty row
+        #   Line 4: actual column headers (First Name, Last Name, ...)
+        # Skip lines until we find the actual header row.
+        for line in f:
+            stripped = line.strip().lower()
+            if stripped.startswith("first name"):
+                # Found the real header — reconstruct a reader from here
+                # Put the header back so DictReader can use it
+                from io import StringIO
+                remaining = line + f.read()
+                reader = csv.DictReader(StringIO(remaining))
+                break
+        else:
+            logger.warning(f"Could not find header row in {csv_path}")
+            return []
+
         for row in reader:
             # Normalize column names (LinkedIn changes them occasionally)
-            normalized = {k.strip(): v.strip() for k, v in row.items()}
+            normalized = {k.strip(): v.strip() for k, v in row.items() if k}
             connections.append(normalized)
 
     logger.info(f"Loaded {len(connections)} LinkedIn connections from {csv_path}")

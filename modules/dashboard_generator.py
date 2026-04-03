@@ -25,7 +25,7 @@ from typing import Dict, List
 logger = logging.getLogger(__name__)
 
 
-def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") -> str:
+def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "", github_token: str = "") -> str:
     """Generate the full single-file HTML dashboard."""
 
     jobs_json = json.dumps(top_jobs, default=str)
@@ -71,6 +71,29 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   .pill .num  {{ font-size: 22px; font-weight: 700; }}
   .pill .lbl  {{ font-size: 11px; color: #9aaac8; margin-top: 2px; }}
 
+  /* ── Apply Session Banner ── */
+  #session-banner {{ display: none; background: linear-gradient(135deg, #1e4080, #2E5FA3);
+      padding: 16px 32px; color: #fff; }}
+  #session-banner.active {{ display: block; }}
+  .session-inner {{ max-width: 900px; margin: 0 auto; display: flex;
+      align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }}
+  .session-info {{ flex: 1; }}
+  .session-info h2 {{ font-size: 16px; font-weight: 700; margin-bottom: 4px; }}
+  .session-info .session-detail {{ font-size: 13px; color: #b8c8e8; }}
+  .session-progress {{ width: 200px; }}
+  .progress-bar {{ background: rgba(255,255,255,.2); border-radius: 6px; height: 8px; overflow: hidden; }}
+  .progress-fill {{ height: 100%; background: var(--green); border-radius: 6px; transition: width .3s; }}
+  .progress-text {{ font-size: 11px; color: #b8c8e8; margin-top: 4px; text-align: right; }}
+  .session-actions {{ display: flex; gap: 8px; }}
+  .btn-session {{ padding: 8px 18px; border-radius: 6px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; transition: all .15s; }}
+  .btn-session-next {{ background: var(--green); color: #fff; }}
+  .btn-session-next:hover {{ background: #219a52; }}
+  .btn-session-skip {{ background: rgba(255,255,255,.15); color: #fff; border: 1px solid rgba(255,255,255,.3); }}
+  .btn-session-skip:hover {{ background: rgba(255,255,255,.25); }}
+  .btn-session-end {{ background: var(--red); color: #fff; }}
+  .btn-session-end:hover {{ background: #c0392b; }}
+
   /* ── Filters ── */
   .filters {{ background: var(--card); border-bottom: 1px solid var(--border);
               padding: 14px 32px; display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }}
@@ -80,6 +103,9 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   .filter-btn {{ padding: 7px 14px; border: 1px solid var(--border); background: #fff;
                  border-radius: 6px; font-size: 13px; cursor: pointer; transition: all .15s; }}
   .filter-btn:hover, .filter-btn.active {{ background: var(--brand); color: #fff; border-color: var(--brand); }}
+  .btn-start-session {{ padding: 7px 16px; border: none; background: var(--green); color: #fff;
+      border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; }}
+  .btn-start-session:hover {{ background: #219a52; }}
   select {{ padding: 7px 12px; border: 1px solid var(--border); border-radius: 6px;
             font-size: 13px; background: #fff; cursor: pointer; }}
 
@@ -91,12 +117,18 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   /* ── Job card ── */
   .card {{ background: var(--card); border-radius: var(--radius); padding: 20px 22px;
            border-left: 5px solid var(--border); box-shadow: 0 1px 4px rgba(0,0,0,.06);
-           transition: box-shadow .15s; }}
+           transition: all .2s; position: relative; }}
   .card:hover {{ box-shadow: 0 4px 14px rgba(0,0,0,.10); }}
   .card.connected-1  {{ border-left-color: var(--green); }}
   .card.connected-2  {{ border-left-color: var(--yellow); }}
   .card.status-applied {{ opacity: .55; }}
   .card.status-skipped {{ display: none; }}
+  .card.session-active {{ border-left-color: var(--brand); box-shadow: 0 0 0 2px var(--brand), 0 4px 14px rgba(46,95,163,.25); }}
+  .card.session-done {{ opacity: .4; }}
+
+  /* Selection checkbox */
+  .card-select {{ position: absolute; top: 12px; right: 12px; }}
+  .card-select input {{ width: 18px; height: 18px; cursor: pointer; accent-color: var(--brand); }}
 
   .card-top {{ display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }}
   .card-rank {{ font-size: 12px; color: var(--muted); font-weight: 600; margin-right: 6px; }}
@@ -130,7 +162,8 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   /* Action row */
   .actions {{ display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }}
   .btn-apply {{ background: var(--brand); color: #fff; padding: 7px 18px; border-radius: 6px;
-                text-decoration: none; font-size: 13px; font-weight: 600; transition: background .15s; }}
+                text-decoration: none; font-size: 13px; font-weight: 600; transition: background .15s;
+                border: none; cursor: pointer; }}
   .btn-apply:hover {{ background: #1e4080; }}
   .btn-action {{ padding: 6px 14px; border: 1px solid var(--border); background: #fff;
                  border-radius: 6px; font-size: 12px; cursor: pointer; transition: all .15s; }}
@@ -141,7 +174,7 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
 
   .url-preview {{ font-size: 11px; color: var(--muted); flex: 1; overflow: hidden;
                   text-overflow: ellipsis; white-space: nowrap; }}
-  .resume-link {{ font-size: 12px; color: var(--green); }}
+  .resume-link {{ font-size: 12px; color: var(--green); text-decoration: none; }}
 
   /* Connections list */
   .connections {{ margin-top: 8px; font-size: 12px; color: var(--muted); }}
@@ -168,6 +201,25 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   <div class="stat-pills" id="stat-pills"></div>
 </header>
 
+<!-- Apply Session Banner (hidden until session starts) -->
+<div id="session-banner">
+  <div class="session-inner">
+    <div class="session-info">
+      <h2 id="session-title">Apply Session</h2>
+      <div class="session-detail" id="session-detail"></div>
+    </div>
+    <div class="session-progress">
+      <div class="progress-bar"><div class="progress-fill" id="session-progress-fill"></div></div>
+      <div class="progress-text" id="session-progress-text"></div>
+    </div>
+    <div class="session-actions">
+      <button class="btn-session btn-session-next" id="btn-session-applied" onclick="sessionMarkApplied()">Applied ✓</button>
+      <button class="btn-session btn-session-skip" id="btn-session-skip" onclick="sessionMarkSkipped()">Skip →</button>
+      <button class="btn-session btn-session-end" onclick="endSession()">End Session</button>
+    </div>
+  </div>
+</div>
+
 <div class="filters">
   <input type="text" id="search" placeholder="Search title, company, skill..." oninput="applyFilters()">
   <select id="sort" onchange="applyFilters()">
@@ -179,15 +231,17 @@ def build_dashboard(top_jobs: List[Dict], run_date: str, github_repo: str = "") 
   <button class="filter-btn"       data-filter="connected" onclick="setFilter(this)">🔗 Connections</button>
   <button class="filter-btn"       data-filter="cpt"       onclick="setFilter(this)">✓ CPT</button>
   <button class="filter-btn"       data-filter="new"       onclick="setFilter(this)">New Only</button>
+  <button class="btn-start-session" id="btn-start-session" onclick="startSession()">🚀 Start Apply Session</button>
 </div>
 
 <div class="grid" id="grid"></div>
 <div id="toast"></div>
-<footer>Automated daily · Powered by Job Hunter Bot · <a href="https://github.com" style="color:var(--brand)">View repo</a></footer>
+<footer>Automated daily · Powered by Job Hunter Bot · <a href="https://github.com/{github_repo}" style="color:var(--brand)">View repo</a></footer>
 
 <script>
 const ALL_JOBS = {jobs_json};
 window.GITHUB_REPO = "{github_repo}";
+window.GITHUB_TOKEN = "{github_token}";
 
 // ── Feedback persistence (localStorage for instant UX) ───────
 function getStatus(id) {{
@@ -202,6 +256,138 @@ function scoreColor(s) {{
   return s >= 75 ? '#27ae60' : s >= 55 ? '#f39c12' : '#e74c3c';
 }}
 
+// ── Resume URL builder ────────────────────────────────────────
+function getResumeUrl(job) {{
+  const repoName = window.GITHUB_REPO || '';
+  if (job.resume_path && repoName) {{
+    return 'https://raw.githubusercontent.com/' + repoName + '/main/' + job.resume_path;
+  }}
+  return null;
+}}
+
+// ── Trigger resume download ───────────────────────────────────
+function downloadResume(job) {{
+  const url = getResumeUrl(job);
+  if (!url) return;
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}}
+
+// ── Open job + download resume (single action) ───────────────
+function openAndApply(jobId) {{
+  const job = ALL_JOBS.find(j => j.id === jobId);
+  if (!job) return;
+  // Open the apply page — Simplify will auto-fill
+  if (job.apply_url) window.open(job.apply_url, '_blank');
+  // Auto-download the tailored resume
+  downloadResume(job);
+  showToast('Opened application — Simplify will auto-fill. Resume downloading...');
+}}
+
+// ══════════════════════════════════════════════════════════════
+// APPLY SESSION — step through jobs one by one
+// ══════════════════════════════════════════════════════════════
+let session = {{ active: false, queue: [], current: 0, applied: 0, skipped: 0 }};
+
+function startSession() {{
+  // Build queue from currently visible "new" jobs
+  const newJobs = ALL_JOBS.filter(j => getStatus(j.id) === 'new');
+  if (newJobs.length === 0) {{
+    showToast('No new jobs to apply to!');
+    return;
+  }}
+
+  session = {{ active: true, queue: newJobs, current: 0, applied: 0, skipped: 0 }};
+
+  // Show banner
+  document.getElementById('session-banner').classList.add('active');
+  document.getElementById('btn-start-session').style.display = 'none';
+
+  // Start first job
+  loadSessionJob();
+}}
+
+function loadSessionJob() {{
+  if (session.current >= session.queue.length) {{
+    endSession();
+    return;
+  }}
+
+  const job = session.queue[session.current];
+  const total = session.queue.length;
+  const done = session.applied + session.skipped;
+
+  // Update banner
+  document.getElementById('session-title').textContent =
+    'Applying: ' + job.company + ' — ' + job.title;
+  document.getElementById('session-detail').textContent =
+    'Job ' + (session.current + 1) + ' of ' + total +
+    ' · ' + session.applied + ' applied · ' + session.skipped + ' skipped';
+
+  // Progress bar
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('session-progress-fill').style.width = pct + '%';
+  document.getElementById('session-progress-text').textContent = pct + '% complete';
+
+  // Highlight current card and scroll to it
+  document.querySelectorAll('.card').forEach(c => c.classList.remove('session-active'));
+  const card = document.getElementById('card-' + job.id);
+  if (card) {{
+    card.classList.add('session-active');
+    card.scrollIntoView({{ behavior: 'smooth', block: 'center' }});
+  }}
+
+  // Open apply page + download resume
+  openAndApply(job.id);
+}}
+
+function sessionMarkApplied() {{
+  if (!session.active) return;
+  const job = session.queue[session.current];
+  markJob(job.id, 'applied');
+  session.applied++;
+
+  const card = document.getElementById('card-' + job.id);
+  if (card) {{ card.classList.remove('session-active'); card.classList.add('session-done'); }}
+
+  session.current++;
+  loadSessionJob();
+}}
+
+function sessionMarkSkipped() {{
+  if (!session.active) return;
+  const job = session.queue[session.current];
+  markJob(job.id, 'skipped');
+  session.skipped++;
+
+  const card = document.getElementById('card-' + job.id);
+  if (card) {{ card.classList.remove('session-active'); card.classList.add('session-done'); }}
+
+  session.current++;
+  loadSessionJob();
+}}
+
+function endSession() {{
+  session.active = false;
+  document.getElementById('session-banner').classList.remove('active');
+  document.getElementById('btn-start-session').style.display = '';
+
+  // Clean up card highlights
+  document.querySelectorAll('.card').forEach(c => {{
+    c.classList.remove('session-active', 'session-done');
+  }});
+
+  if (session.applied + session.skipped > 0) {{
+    showToast('Session complete! ' + session.applied + ' applied, ' + session.skipped + ' skipped.');
+  }}
+  applyFilters();
+}}
+
 // ── Render one card ───────────────────────────────────────────
 function renderCard(job, rank) {{
   const status = getStatus(job.id);
@@ -210,101 +396,86 @@ function renderCard(job, rank) {{
   const score = job.relevance_score || 0;
   const col   = scoreColor(score);
 
-  // CPT badge
   const cptBadge = job.cpt_signal === 'positive'
     ? '<span class="badge badge-green">✓ CPT Friendly</span>'
     : job.cpt_signal === 'negative'
     ? '<span class="badge badge-red">✗ No Sponsorship</span>'
     : '<span class="badge badge-yellow">? CPT Unconfirmed</span>';
 
-  // Connection badge
   const connBadge = job.connection_flag === '1st_degree'
-    ? `<span class="badge badge-green">🔗 1st Degree</span>`
+    ? '<span class="badge badge-green">🔗 1st Degree</span>'
     : job.connection_flag === 'possible_2nd'
-    ? `<span class="badge badge-yellow">🔗 Possible Connection</span>`
-    : `<span class="badge badge-gray">No Connection</span>`;
+    ? '<span class="badge badge-yellow">🔗 Possible Connection</span>'
+    : '<span class="badge badge-gray">No Connection</span>';
 
   const sourceMap = {{ greenhouse_api: 'Greenhouse', lever_api: 'Lever', jsearch: 'JSearch', adzuna: 'Adzuna' }};
   const sourceLabel = sourceMap[job.source] || job.source;
 
   const skillsHtml = (job.skill_matches || []).slice(0, 6).map(s =>
-    `<span class="skill-pill">${{s}}</span>`).join('');
+    '<span class="skill-pill">' + s + '</span>').join('');
 
   const connectionsHtml = (job.connections || []).length > 0
-    ? `<div class="connections">Connections: ${{
+    ? '<div class="connections">Connections: ' +
         (job.connections || []).slice(0, 4).map(c =>
-          `<span class="conn-item">👤 ${{c.name}}${{c.position ? ' · ' + c.position : ''}}</span>`
-        ).join('')
-      }}</div>` : '';
+          '<span class="conn-item">👤 ' + c.name + (c.position ? ' · ' + c.position : '') + '</span>'
+        ).join('') +
+      '</div>' : '';
 
-  // Build GitHub raw URL for the resume if available
-  const repoName = window.GITHUB_REPO || '';
-  const resumeUrl = job.resume_path && repoName
-    ? `https://raw.githubusercontent.com/${{repoName}}/main/${{job.resume_path}}`
-    : null;
+  const resumeUrl = getResumeUrl(job);
   const resumeHtml = resumeUrl
-    ? `<a href="${{resumeUrl}}" target="_blank" download class="resume-link">📄 Download Resume</a>`
-    : job.resume_path ? `<span class="resume-link">📄 Resume ready (push to view)</span>` : '';
+    ? '<a href="' + resumeUrl + '" target="_blank" download class="resume-link">📄 Download Resume</a>'
+    : job.resume_path ? '<span class="resume-link">📄 Resume ready</span>' : '';
 
   const url = job.apply_url || '#';
-  const urlPreview = url.length > 55 ? url.slice(0, 55) + '…' : url;
+  const urlPreview = url.length > 55 ? url.slice(0, 55) + '...' : url;
 
-  const btnClass = status === 'new' ? '' :
-    status === 'applied' ? 'active-applied' :
-    status === 'saved'   ? 'active-saved'   : 'active-skipped';
+  return '<div class="card ' + connClass + ' status-' + status + '"' +
+       ' id="card-' + job.id + '"' +
+       ' data-score="' + score + '"' +
+       ' data-connection="' + job.connection_flag + '"' +
+       ' data-cpt="' + job.cpt_signal + '"' +
+       ' data-status="' + status + '">' +
 
-  return `
-  <div class="card ${{connClass}} status-${{status}}"
-       id="card-${{job.id}}"
-       data-score="${{score}}"
-       data-connection="${{job.connection_flag}}"
-       data-cpt="${{job.cpt_signal}}"
-       data-status="${{status}}"
-       data-search="${{[job.title, job.company, job.location, ...(job.skill_matches||[])].join(' ').toLowerCase()}}">
+    '<div class="card-top">' +
+      '<div style="flex:1">' +
+        '<div>' +
+          '<span class="card-rank">#' + rank + '</span>' +
+          '<span class="card-title">' + job.title + '</span>' +
+        '</div>' +
+        '<div class="card-company">' +
+          '<strong>' + job.company + '</strong>' +
+          ' · ' + (job.location || 'Remote / TBD') +
+          ' · <span style="font-size:11px;color:#9aaac8">via ' + sourceLabel + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="score-wrap">' +
+        '<div class="score-bar"><div class="score-fill" style="width:' + score + '%;background:' + col + '"></div></div>' +
+        '<span class="score-num">' + score + '</span>' +
+      '</div>' +
+    '</div>' +
 
-    <div class="card-top">
-      <div style="flex:1">
-        <div>
-          <span class="card-rank">#${{rank}}</span>
-          <span class="card-title">${{job.title}}</span>
-        </div>
-        <div class="card-company">
-          <strong>${{job.company}}</strong>
-          &nbsp;·&nbsp;${{job.location || 'Remote / TBD'}}
-          &nbsp;·&nbsp;<span style="font-size:11px;color:#9aaac8">via ${{sourceLabel}}</span>
-        </div>
-      </div>
-      <div class="score-wrap">
-        <div class="score-bar">
-          <div class="score-fill" style="width:${{score}}%;background:${{col}}"></div>
-        </div>
-        <span class="score-num">${{score}}</span>
-      </div>
-    </div>
+    '<div class="badges">' + cptBadge + connBadge + '</div>' +
 
-    <div class="badges">
-      ${{cptBadge}}
-      ${{connBadge}}
-    </div>
+    (job.match_reason ? '<div class="match">"' + job.match_reason + '"</div>' : '') +
+    (skillsHtml ? '<div class="skills">' + skillsHtml + '</div>' : '') +
+    connectionsHtml +
+    (job.concern ? '<div style="margin-top:6px;font-size:12px;color:#adb5bd">⚠ ' + job.concern + '</div>' : '') +
 
-    ${{job.match_reason ? `<div class="match">"${{job.match_reason}}"</div>` : ''}}
-
-    ${{skillsHtml ? `<div class="skills">${{skillsHtml}}</div>` : ''}}
-    ${{connectionsHtml}}
-    ${{job.concern ? `<div style="margin-top:6px;font-size:12px;color:#adb5bd">⚠ ${{job.concern}}</div>` : ''}}
-
-    <div class="actions">
-      <a href="${{url}}" target="_blank" class="btn-apply">Apply Now →</a>
-      ${{resumeHtml}}
-      <button class="btn-action ${{status==='applied'?'active-applied':''}}"
-              onclick="markJob('${{job.id}}','applied')">✓ Applied</button>
-      <button class="btn-action ${{status==='saved'?'active-saved':''}}"
-              onclick="markJob('${{job.id}}','saved')">⭐ Save</button>
-      <button class="btn-action ${{status==='skipped'?'active-skipped':''}}"
-              onclick="markJob('${{job.id}}','skipped')">✕ Skip</button>
-      <span class="url-preview">${{urlPreview}}</span>
-    </div>
-  </div>`;
+    '<div class="actions">' +
+      '<button class="btn-apply" onclick="openAndApply(\\\'' + job.id + '\\\')">Apply Now →</button>' +
+      resumeHtml +
+      '<button class="btn-action ' + (status==='applied'?'active-applied':'') + '"' +
+              ' onclick="markJob(\\\'' + job.id + '\\\',\\\'applied\\\')">' +
+              '✓ Applied</button>' +
+      '<button class="btn-action ' + (status==='saved'?'active-saved':'') + '"' +
+              ' onclick="markJob(\\\'' + job.id + '\\\',\\\'saved\\\')">' +
+              '⭐ Save</button>' +
+      '<button class="btn-action ' + (status==='skipped'?'active-skipped':'') + '"' +
+              ' onclick="markJob(\\\'' + job.id + '\\\',\\\'skipped\\\')">' +
+              '✕ Skip</button>' +
+      '<span class="url-preview">' + urlPreview + '</span>' +
+    '</div>' +
+  '</div>';
 }}
 
 // ── Render all cards ──────────────────────────────────────────
@@ -324,13 +495,17 @@ function updateStats(jobs) {{
   const connected = jobs.filter(j => j.connection_flag !== 'none').length;
   const cptPos    = jobs.filter(j => j.cpt_signal === 'positive').length;
   const applied   = jobs.filter(j => getStatus(j.id) === 'applied').length;
+  const newCount  = jobs.filter(j => getStatus(j.id) === 'new').length;
 
-  document.getElementById('stat-pills').innerHTML = `
-    <div class="pill"><div class="num">${{total}}</div><div class="lbl">Roles</div></div>
-    <div class="pill"><div class="num">${{connected}}</div><div class="lbl">Connections</div></div>
-    <div class="pill"><div class="num">${{cptPos}}</div><div class="lbl">CPT ✓</div></div>
-    <div class="pill"><div class="num">${{applied}}</div><div class="lbl">Applied</div></div>
-  `;
+  document.getElementById('stat-pills').innerHTML =
+    '<div class="pill"><div class="num">' + total + '</div><div class="lbl">Roles</div></div>' +
+    '<div class="pill"><div class="num">' + connected + '</div><div class="lbl">Connections</div></div>' +
+    '<div class="pill"><div class="num">' + cptPos + '</div><div class="lbl">CPT ✓</div></div>' +
+    '<div class="pill"><div class="num">' + applied + '</div><div class="lbl">Applied</div></div>';
+
+  // Update start session button with count
+  const btn = document.getElementById('btn-start-session');
+  if (btn) btn.textContent = '🚀 Start Apply Session (' + newCount + ' new)';
 }}
 
 // ── Filter & sort ─────────────────────────────────────────────
@@ -348,12 +523,10 @@ function applyFilters() {{
 
   let jobs = [...ALL_JOBS];
 
-  // Filter
   if (activeFilter === 'connected') jobs = jobs.filter(j => j.connection_flag !== 'none');
   if (activeFilter === 'cpt')       jobs = jobs.filter(j => j.cpt_signal === 'positive');
   if (activeFilter === 'new')       jobs = jobs.filter(j => getStatus(j.id) === 'new');
 
-  // Search
   if (q) {{
     jobs = jobs.filter(j => {{
       const haystack = [j.title, j.company, j.location, ...(j.skill_matches || [])].join(' ').toLowerCase();
@@ -361,7 +534,6 @@ function applyFilters() {{
     }});
   }}
 
-  // Sort
   if (sort === 'score') {{
     jobs.sort((a, b) => (b.relevance_score || 0) - (a.relevance_score || 0));
   }} else if (sort === 'connection') {{
@@ -377,6 +549,70 @@ function applyFilters() {{
   renderAll(jobs);
 }}
 
+// ── GitHub feedback sync ──────────────────────────────────────
+async function syncFeedbackToGitHub(jobId, status) {{
+  const repo = window.GITHUB_REPO;
+  const token = window.GITHUB_TOKEN;
+  if (!repo || !token) return;
+
+  const apiBase = 'https://api.github.com/repos/' + repo;
+  const filePath = 'data/feedback_history.json';
+  const url = apiBase + '/contents/' + filePath;
+
+  try {{
+    const getResp = await fetch(url, {{
+      headers: {{ 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github.v3+json' }}
+    }});
+
+    let existing = [];
+    let sha = null;
+
+    if (getResp.ok) {{
+      const fileData = await getResp.json();
+      sha = fileData.sha;
+      const decoded = atob(fileData.content.replace(/\\n/g, ''));
+      existing = JSON.parse(decoded);
+    }}
+
+    const job = ALL_JOBS.find(j => j.id === jobId) || {{}};
+
+    existing = existing.filter(e => e.job_id !== jobId);
+    existing.push({{
+      job_id:    jobId,
+      title:     job.title || '',
+      company:   job.company || '',
+      source:    job.source || '',
+      status:    status,
+      score:     job.relevance_score || null,
+      logged_at: new Date().toISOString()
+    }});
+
+    const body = {{
+      message: 'feedback: ' + status + ' ' + (job.company || '') + ' - ' + (job.title || ''),
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(existing, null, 2)))),
+      sha: sha
+    }};
+
+    const putResp = await fetch(url, {{
+      method: 'PUT',
+      headers: {{
+        'Authorization': 'Bearer ' + token,
+        'Accept': 'application/vnd.github.v3+json',
+        'Content-Type': 'application/json'
+      }},
+      body: JSON.stringify(body)
+    }});
+
+    if (putResp.ok) {{
+      console.log('Feedback synced to GitHub:', jobId, status);
+    }} else {{
+      console.warn('GitHub sync failed:', await putResp.text());
+    }}
+  }} catch (err) {{
+    console.warn('GitHub sync error:', err);
+  }}
+}}
+
 // ── Mark job status ───────────────────────────────────────────
 function markJob(id, status) {{
   setStatus(id, status);
@@ -384,7 +620,6 @@ function markJob(id, status) {{
   const card = document.getElementById('card-' + id);
   if (card) {{
     card.dataset.status = status;
-    // Update button states
     card.querySelectorAll('.btn-action').forEach(b => {{
       b.classList.remove('active-applied', 'active-saved', 'active-skipped');
     }});
@@ -397,10 +632,13 @@ function markJob(id, status) {{
     if (status === 'skipped') card.style.display = 'none';
   }}
 
-  showToast(status === 'applied' ? '✓ Marked as Applied!'
-           : status === 'saved'   ? '⭐ Saved!'
-           : '✕ Skipped');
+  if (!session.active) {{
+    showToast(status === 'applied' ? '✓ Marked as Applied!'
+             : status === 'saved'   ? '⭐ Saved!'
+             : '✕ Skipped');
+  }}
   updateStats(ALL_JOBS);
+  syncFeedbackToGitHub(id, status);
 }}
 
 // ── Toast ─────────────────────────────────────────────────────
@@ -411,7 +649,6 @@ function showToast(msg) {{
   setTimeout(() => t.classList.remove('show'), 2200);
 }}
 
-// ── GitHub Repo (injected at build time for resume URLs) ─────
 // ── Init ──────────────────────────────────────────────────────
 applyFilters();
 </script>
@@ -440,7 +677,8 @@ class DashboardGenerator:
 
         Path("docs").mkdir(exist_ok=True)
         github_repo = os.environ.get("GITHUB_REPO", "ahrar11/job-hunter")
-        html = build_dashboard(top_jobs, run_date, github_repo)
+        github_token = os.environ.get("GITHUB_FEEDBACK_TOKEN", "")
+        html = build_dashboard(top_jobs, run_date, github_repo, github_token)
 
         out_path = Path("docs/index.html")
         with open(out_path, "w") as f:
