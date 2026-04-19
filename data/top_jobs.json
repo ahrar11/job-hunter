@@ -1,474 +1,54 @@
 {
-  "run_date": "2026-04-18T04:36:20.984774+00:00",
-  "total_scored": 16,
+  "run_date": "2026-04-19T04:54:52.076526+00:00",
+  "total_scored": 22,
   "top_n": 20,
-  "top_jobs": [
+  "top_jobs": [],
+  "remaining_jobs": [
     {
-      "id": "342013d46c70",
-      "title": "BI Intern - Carson, CA",
-      "company": "Home Depot",
-      "location": "Phillips Ranch, Los Angeles County",
-      "description": "We're looking for a Business Intelligence & Software Development Intern who's curious, motivated, and excited to get hands-on experience with enterprise-level projects-not just busy work. You'll work side-by-side with our BI, Data Engineering, Automation, and Software Development teams , helping tackle meaningful tasks that keep our projects moving and our systems running smoothly. In return, you'll gain real skills, real mentorship, and real experience you can actually talk about in future int\u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5699417047?se=FODEH-A68RG5MdAajAlS_A&utm_medium=api&utm_source=5eeeff4a&v=A8B57F636EC80B6A2A079ADA79FB9474973A9F8D",
+      "id": "c020f86257f6",
+      "title": "Operations & Intelligence Analyst Intern (Summer 2026)",
+      "company": "Spire",
+      "location": "Washington, Washington, D.C.",
+      "description": "Role Overview Spire's Federal Sales team runs on information and right now that information lives in too many places, in too many formats, in varying states of accuracy. This role is designed for a student eager to learn the mechanics of operational efficiency. You\u2019ll be mentored on how to audit, clean, and structure data for maximum impact. You won't just be organizing files; you\u2019ll be learning how to build a 'Single Source of Truth' a vital skill for any future career in data analytics, consu\u2026",
+      "apply_url": "https://www.adzuna.com/details/5704180386?utm_medium=api&utm_source=5eeeff4a",
       "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-14T18:00:54Z",
+      "posted_at": "2026-04-18T23:06:20Z",
       "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:10.786239+00:00",
+      "fetched_at": "2026-04-19T04:54:43.595146+00:00",
       "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 92,
+      "connection_flag": null,
+      "relevance_score": 50,
       "cpt_signal": "neutral",
       "cpt_positive_hits": [],
       "cpt_negative_hits": [],
       "summer_2026_mentioned": false,
-      "raw_score": 92,
-      "match_reason": "Enterprise BI internship at Fortune 500 retailer explicitly seeking BI, data engineering, and software development; excellent skill match with Tableau, Power BI, SQL, Python, and broader analytics toolkit.",
-      "skill_matches": [
-        "Tableau",
-        "Power BI",
-        "SQL",
-        "Python",
-        "Excel",
-        "Data Engineering"
-      ],
-      "concern": "Location in Los Angeles may be less preferred; minor travel consideration",
-      "connections": []
+      "raw_score": 50,
+      "match_reason": "Could not score",
+      "skill_matches": [],
+      "concern": ""
     },
     {
-      "id": "4f1cd88a5767",
-      "title": "Data Science Intern",
-      "company": "CMTelematics",
-      "location": "Cambridge, Middlesex County",
-      "description": "Cambridge Mobile Telematics (CMT) is the world\u2019s largest telematics service provider. Its mission is to make the world\u2019s roads and drivers safer. The company\u2019s AI-driven platform, DriveWell\u00ae Fusion, gathers sensor data from millions of IoT devices \u2014 including smartphones, proprietary Tags, connected vehicles, dashcams, and third-party devices \u2014 and fuses them with contextual data to create a unified view of vehicle and driver behavior. Auto insurers, automakers, commercial mobility companies, a\u2026",
-      "apply_url": "https://www.adzuna.com/details/5702308830?utm_medium=api&utm_source=5eeeff4a",
+      "id": "72bf1e47661a",
+      "title": "Program Operations Analyst Intern (Summer 2026)",
+      "company": "Connect, protect, and build everywhere",
+      "location": "San Francisco, California",
+      "description": "About Us At Cloudflare, we are on a mission to help build a better Internet. Today the company runs one of the world\u2019s largest networks that powers millions of websites and other Internet properties for customers ranging from individual bloggers to SMBs to Fortune 500 companies. Cloudflare protects and accelerates any Internet application online without adding hardware, installing software, or changing a line of code. Internet properties powered by Cloudflare all have web traffic routed through\u2026",
+      "apply_url": "https://www.adzuna.com/details/5700066308?utm_medium=api&utm_source=5eeeff4a",
       "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T02:32:22Z",
+      "posted_at": "2026-04-15T06:53:37Z",
       "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:07.643959+00:00",
+      "fetched_at": "2026-04-19T04:54:43.595275+00:00",
       "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 88,
+      "connection_flag": null,
+      "relevance_score": 50,
       "cpt_signal": "neutral",
       "cpt_positive_hits": [],
       "cpt_negative_hits": [],
       "summer_2026_mentioned": false,
-      "raw_score": 88,
-      "match_reason": "Data science internship at telematics/IoT company with AI platform; strong overlap with candidate's Python, data analysis, and machine learning skills.",
-      "skill_matches": [
-        "Python",
-        "data science",
-        "machine learning",
-        "AI",
-        "analytics"
-      ],
-      "concern": "Location is Cambridge, MA (favorable); description truncated but CMT is reputable AI-driven company.",
-      "connections": []
-    },
-    {
-      "id": "f445e7192103",
-      "title": "IT Intern - Data Scientist",
-      "company": "Weyerhaeuser",
-      "location": "Seattle, King County",
-      "description": "Required: Currently pursuing a bachelor's degree in Data Science, Computer Science, Statistics, Applied Mathematics, Operations Research, Engineering, Information Systems, or a related field or graduated within 6 months of application. Coursework or project experience in machine learning, statistics, predictive analytics, optimization, or data science. Experience programming in Python and/or SQL. Strong analytical thinking and problem-solving skills. Ability to learn new tools and technologies \u2026",
-      "apply_url": "https://www.adzuna.com/details/5703229289?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T22:44:45Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:07.643826+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 85,
-      "cpt_signal": "positive",
-      "cpt_positive_hits": [
-        "opt"
-      ],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 85,
-      "match_reason": "Strong match for data science internship with explicit requirements for Python, SQL, and machine learning/statistics experience that candidate possesses.",
-      "skill_matches": [
-        "Python",
-        "SQL",
-        "Scikit-learn",
-        "machine learning"
-      ],
-      "concern": "Degree is M.S., not bachelor's, but graduated within 6 months clause may apply; location is Seattle.",
-      "connections": [
-        {
-          "name": "Nittala Venkata Sai Aditya",
-          "position": "Senior Data & Analytics Consultant",
-          "profile_url": "https://www.linkedin.com/in/nittala-venkata-sai-aditya",
-          "connection_degree": 1
-        },
-        {
-          "name": "Smyan Thota",
-          "position": "AI & TechOps Engineer",
-          "profile_url": "https://www.linkedin.com/in/smyan-satyarthi-thota",
-          "connection_degree": 1
-        },
-        {
-          "name": "Avani Dixit",
-          "position": "Associate Consultant - GenAI",
-          "profile_url": "https://www.linkedin.com/in/avani-dixit-565a1920a",
-          "connection_degree": 1
-        },
-        {
-          "name": "Akhil Veluru",
-          "position": "Senior Consultant",
-          "profile_url": "https://www.linkedin.com/in/akhilveluru",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "3dacb7586f90",
-      "title": "Business Intelligence Developer Intern",
-      "company": "Berkley",
-      "location": "Scottsdale, Maricopa County",
-      "description": "Nautilus Insurance Group is a strong underwriting Company and respected leader in the E&S industry. Our culture promotes creativity, integrity and respect, allowing us to attract and retain quality employees. Nautilus is a subsidiary of the W. R. Berkley Corporation, a Fortune 500 company recognized as one of the most respected names in the property casualty insurance industry. Nautilus writes Commercial Excess and Surplus Lines business in all 50 states. About W. R. Berkley Corporation W. R. B\u2026",
-      "apply_url": "https://www.adzuna.com/details/5702574171?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T08:27:49Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:10.786049+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 85,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 85,
-      "match_reason": "Direct BI Developer internship in insurance; candidate's strong Tableau, Power BI, SQL, and Python skills align perfectly with core BI needs; Fortune 500 company with enterprise BI work.",
-      "skill_matches": [
-        "Tableau",
-        "Power BI",
-        "SQL",
-        "DAX",
-        "Excel"
-      ],
-      "concern": "Insurance domain is new to candidate; location in Arizona",
-      "connections": [
-        {
-          "name": "Nittala Venkata Sai Aditya",
-          "position": "Senior Data & Analytics Consultant",
-          "profile_url": "https://www.linkedin.com/in/nittala-venkata-sai-aditya",
-          "connection_degree": 1
-        },
-        {
-          "name": "Smyan Thota",
-          "position": "AI & TechOps Engineer",
-          "profile_url": "https://www.linkedin.com/in/smyan-satyarthi-thota",
-          "connection_degree": 1
-        },
-        {
-          "name": "Avani Dixit",
-          "position": "Associate Consultant - GenAI",
-          "profile_url": "https://www.linkedin.com/in/avani-dixit-565a1920a",
-          "connection_degree": 1
-        },
-        {
-          "name": "Akhil Veluru",
-          "position": "Senior Consultant",
-          "profile_url": "https://www.linkedin.com/in/akhilveluru",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "941267927b1d",
-      "title": "Product & Data Analyst Intern",
-      "company": "Ascensus",
-      "location": "Dresher, Montgomery County",
-      "description": "Ascensus is the leading independent technology and service platform powering savings plans across America, providing products and expertise that help nearly 16 million people save for a better today and tomorrow. Are you a student looking to make extra money this summer while gaining valuable work experience? Ascensus is the leading independent technology and service platform powering savings plans across America, providing products and expertise that help nearly 16 million people save for a be\u2026",
-      "apply_url": "https://www.adzuna.com/details/5701167586?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-16T03:03:49Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:05.989868+00:00",
-      "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 82,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 82,
-      "match_reason": "Product and data analyst internship at fintech platform matches candidate's analytics and BI tool expertise with direct product/business focus.",
-      "skill_matches": [
-        "data analysis",
-        "analytics",
-        "Power BI",
-        "product analytics"
-      ],
-      "concern": "Location is Pennsylvania; description truncated but Ascensus is reputable fintech company.",
-      "connections": []
-    },
-    {
-      "id": "d7278e0a3b86",
-      "title": "Data Analyst Internship (Revenue Cycle & Analytics)",
-      "company": "AAC Midwest",
-      "location": "Chicago, Cook County",
-      "description": "About AAC Ambulatory Anesthesia Care (AAC) is a national leader in office-based anesthesia services. We partner with practices across the country to deliver safe, efficient, and patient-centered care outside the hospital setting. As we continue to grow, we are investing in data, analytics, and operational excellence to support smarter, faster decision-making. About the Role We\u2019re looking for a Data Analyst Intern to support key initiatives across revenue cycle operations, reporting, and analyti\u2026",
-      "apply_url": "https://www.adzuna.com/details/5702272261?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T02:06:24Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:05.989622+00:00",
-      "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 78,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 78,
-      "match_reason": "Data analyst internship in healthcare revenue cycle is directly relevant to candidate's analytics skills and healthcare supply-chain project experience.",
-      "skill_matches": [
-        "data analysis",
-        "analytics",
-        "SQL",
-        "healthcare"
-      ],
-      "concern": "Location is Chicago; description truncated but role title is clear and on-brand.",
-      "connections": []
-    },
-    {
-      "id": "441e30f216c0",
-      "title": "SAP iXp Intern - HanaHaus Business Insights Analyst",
-      "company": "SAP",
-      "location": "Balboa Island, Orange County",
-      "description": "We help the world run better At SAP, we keep it simple: you bring your best to us, and we'll bring out the best in you. We're builders touching over 20 industries and 80% of global commerce, and we need your unique talents to help shape what's next. The work is challenging - but it matters. You'll find a place where you can be yourself, prioritize your wellbeing, and truly belong. What's in it for you? Constant learning, skill growth, great benefits, and a team that wants you to grow and succee\u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5700679923?se=NJbyG-A68RGZ3L9kDetG3g&utm_medium=api&utm_source=5eeeff4a&v=3646D02B4F9B18870F55838B25A80C54DA019DD4",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-15T18:05:12Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:04.416843+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 75,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 75,
-      "match_reason": "Business insights analyst role at major enterprise software company is relevant to candidate's analytics background; description truncated but SAP internships are reputable.",
-      "skill_matches": [
-        "Power BI",
-        "analytics",
-        "business intelligence"
-      ],
-      "concern": "Description is incomplete; location is Southern California.",
-      "connections": [
-        {
-          "name": "Max Lattermann",
-          "position": "Customer Success Engineer",
-          "profile_url": "https://www.linkedin.com/in/max-lattermann",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "2aada1ec938f",
-      "title": "MBA Intern - CEO Office (Strategy & Business Development)",
-      "company": "Dreamscape Learn",
-      "location": "Phoenix, Maricopa County",
-      "description": "Support the CEO on strategic initiatives , including market expansion, partnerships, and operational improvements Conduct market research, competitive analysis, and financial modeling to inform business and growth decisions Identify and evaluate new partnership and business development opportunities , including market mapping and outreach support Assist in developing partnership materials, proposals, and executive-level presentations Support pipeline tracking and coordination for key partnershi\u2026",
-      "apply_url": "https://www.adzuna.com/details/5703034864?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T19:25:14Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:09.270686+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 75,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 75,
-      "match_reason": "Strategy and business development role with strong analytical components; candidate's analytics background and project experience in market/data analysis align well with market research and financial modeling needs.",
-      "skill_matches": [
-        "Excel",
-        "A/B Testing",
-        "Data Analysis"
-      ],
-      "concern": "MBA-targeted role but candidate has MS in Business Analytics; role is more strategy-focused than analytics-focused",
-      "connections": [
-        {
-          "name": "Nandini Reddy",
-          "position": "Business Analyst",
-          "profile_url": "https://www.linkedin.com/in/nandinireddy11204",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "b2453d935490",
-      "title": "AI Data Science Intern",
-      "company": "Leidos",
-      "location": "Orlando, Orange County",
-      "description": "Leidos is seeking a university student to join our Orlando-based team as Software Development Interns supporting Internal Research and Development (IRAD) efforts. This internship offers an opportunity to contribute to exploratory projects in Artificial Intelligence (AI), data engineering, and advanced software development \u2014 all in support of Leidos' internal innovation and national security customer missions. We welcome applicants from a variety of academic backgrounds who have strong interest \u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5703246349?se=GoDVHeA68RG5MdAajAlS_A&utm_medium=api&utm_source=5eeeff4a&v=884C52AC758775870F0002CA4C7C07BE34682689",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T23:05:04Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:07.643747+00:00",
-      "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 72,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 72,
-      "match_reason": "AI/data science internship with explicit focus on machine learning and data engineering matches candidate's technical skills.",
-      "skill_matches": [
-        "Python",
-        "AI",
-        "machine learning",
-        "data engineering"
-      ],
-      "concern": "Leidos is defense/national security contractor; may require or strongly prefer US citizenship/clearance; description truncated.",
-      "connections": []
-    },
-    {
-      "id": "f4b032cdfe43",
-      "title": "SpDE Financial and Data Analyst Intern",
-      "company": "AeroVironment",
-      "location": "Germantown, Montgomery County",
-      "description": "Worker Type Supplemental Job Description At AV we firmly believe that all internships are not created equal. Our Summer Internship Program is meticulously designed to provide students with an immersive and dynamic experience within our industry, offering a taste of what it's like to be part of our professional team. Unlike many other internship programs, we strive to simulate a full-time job, enabling our interns to work hands-on with cutting-edge technology, contribute to meaningful projects, \u2026",
-      "apply_url": "https://www.adzuna.com/details/5703223381?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T22:35:02Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:05.989441+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 70,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": true,
-      "raw_score": 70,
-      "match_reason": "Financial and data analyst internship aligns with candidate's analytics expertise; aerospace/defense company with reasonable project-based experience.",
-      "skill_matches": [
-        "analytics",
-        "data analysis",
-        "Python"
-      ],
-      "concern": "Aerospace/defense sector may have security clearance requirements; description is truncated.",
-      "connections": [
-        {
-          "name": "Bhavana Reddy P N",
-          "position": "Data Engineer",
-          "profile_url": "https://www.linkedin.com/in/bhavana-pn",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "b429af628f7f",
-      "title": "Summer Intern, Data Science (LA Kings)",
-      "company": "AEG Worldwide",
-      "location": "El Segundo, Los Angeles County",
-      "description": "In order to be considered for this role, after clicking \"Apply Now\" above and being redirected, you must fully complete the application process on the follow-up screen. Summer Intern, Data Science (LA Kings) For more than 20 years, AEG has played a pivotal role in transforming sports and live entertainment. Annually, we host more than 160 million guests, promote more than 10,000 shows and present more than 22,000 events around the world. We are committed to innovation, artistry, and community, \u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5701156837?se=GoDVHeA68RG5MdAajAlS_A&utm_medium=api&utm_source=5eeeff4a&v=CBA4DEE0C954BDB87CE36E8B53A1244A82EF040C",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-16T02:27:40Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:07.644037+00:00",
-      "status": "new",
-      "connection_flag": "none",
-      "relevance_score": 68,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 68,
-      "match_reason": "Data science internship with sports analytics at major entertainment company is tangentially relevant to candidate's analytics background.",
-      "skill_matches": [
-        "data science",
-        "analytics"
-      ],
-      "concern": "Sports/entertainment analytics is niche domain with limited candidate experience; location is Los Angeles; description truncated.",
-      "connections": []
-    },
-    {
-      "id": "597965554a8d",
-      "title": "Advisory Intern, Management Consulting, People Strategy & Solutions, Visual Communications - Summer 2026 (Indianapolis)",
-      "company": "BDO USA, PC",
-      "location": "Woodbridge, Middlesex County",
-      "description": "Job Summary: The Visual Communications Intern, Management Consulting utilizes their educational background as well as their organizational skills to serve the firm\u2019s client base. This position assists in providing basic visual communications and visual design to clients in the areas of business performance improvement, Human Capital, IT business enablement, and technology operations, partnering with more experienced Management Consulting professionals who provide direction, coaching and learnin\u2026",
-      "apply_url": "https://www.adzuna.com/details/5702340346?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T04:00:13Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:09.270858+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 68,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 68,
-      "match_reason": "Visual communications and design-heavy consulting internship; candidate has relevant analytical and business consulting adjacent skills, but the role heavily emphasizes visual/creative design which is not a core candidate strength.",
-      "skill_matches": [
-        "Excel",
-        "Business Analysis",
-        "Python"
-      ],
-      "concern": "Visual design and communications are primary focus; limited emphasis on data/analytics work candidate excels at",
-      "connections": [
-        {
-          "name": "Rayyan Ahmed",
-          "position": "Business Analyst",
-          "profile_url": "https://www.linkedin.com/in/rayyan-ahmed-33431814b",
-          "connection_degree": 1
-        }
-      ]
-    },
-    {
-      "id": "6f71628e0e18",
-      "title": "Partnership Strategy Intern",
-      "company": "Legends Global",
-      "location": "The Colony, Denton County",
-      "description": "In order to be considered for this role, after clicking \"Apply Now\" above and being redirected, you must fully complete the application process on the follow-up screen. POSITION: Partnership Strategy Intern DEPARTMENT: Global Partnerships REPORTS TO: Manager, Partnership Development FLSA STATUS: Non-Exempt/Hourly LEGENDS GLOBAL Legends Global is the premier partner to the world's greatest live events, venues, and brands. We deliver a fully integrated solution of premium services that keeps our \u2026",
-      "apply_url": "https://www.adzuna.com/details/5702389370?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-17T04:44:54Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-18T04:36:09.270782+00:00",
-      "status": "new",
-      "connection_flag": "1st_degree",
-      "relevance_score": 62,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 62,
-      "match_reason": "Partnership strategy role requires business development and relationship skills; candidate has some relevant analytical capability but lacks direct partnership/business development experience.",
-      "skill_matches": [
-        "Excel",
-        "Market Analysis"
-      ],
-      "concern": "Role is partnerships/BD-focused rather than analytics; limited skill overlap with candidate's technical background",
-      "connections": [
-        {
-          "name": "Avinake Khetan",
-          "position": "Service Delivery Lead",
-          "profile_url": "https://www.linkedin.com/in/avinake-khetan",
-          "connection_degree": 1
-        },
-        {
-          "name": "Prashant Samal",
-          "position": "Delivery Lead",
-          "profile_url": "https://www.linkedin.com/in/prashantsamal",
-          "connection_degree": 1
-        }
-      ]
+      "raw_score": 50,
+      "match_reason": "Could not score",
+      "skill_matches": [],
+      "concern": ""
     }
-  ],
-  "remaining_jobs": []
+  ]
 }
