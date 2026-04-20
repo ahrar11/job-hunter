@@ -1,54 +1,7 @@
 {
-  "run_date": "2026-04-19T04:54:52.076526+00:00",
-  "total_scored": 22,
+  "run_date": "2026-04-20T05:17:54.431455+00:00",
+  "total_scored": 13,
   "top_n": 20,
   "top_jobs": [],
-  "remaining_jobs": [
-    {
-      "id": "c020f86257f6",
-      "title": "Operations & Intelligence Analyst Intern (Summer 2026)",
-      "company": "Spire",
-      "location": "Washington, Washington, D.C.",
-      "description": "Role Overview Spire's Federal Sales team runs on information and right now that information lives in too many places, in too many formats, in varying states of accuracy. This role is designed for a student eager to learn the mechanics of operational efficiency. You\u2019ll be mentored on how to audit, clean, and structure data for maximum impact. You won't just be organizing files; you\u2019ll be learning how to build a 'Single Source of Truth' a vital skill for any future career in data analytics, consu\u2026",
-      "apply_url": "https://www.adzuna.com/details/5704180386?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-18T23:06:20Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-19T04:54:43.595146+00:00",
-      "status": "new",
-      "connection_flag": null,
-      "relevance_score": 50,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 50,
-      "match_reason": "Could not score",
-      "skill_matches": [],
-      "concern": ""
-    },
-    {
-      "id": "72bf1e47661a",
-      "title": "Program Operations Analyst Intern (Summer 2026)",
-      "company": "Connect, protect, and build everywhere",
-      "location": "San Francisco, California",
-      "description": "About Us At Cloudflare, we are on a mission to help build a better Internet. Today the company runs one of the world\u2019s largest networks that powers millions of websites and other Internet properties for customers ranging from individual bloggers to SMBs to Fortune 500 companies. Cloudflare protects and accelerates any Internet application online without adding hardware, installing software, or changing a line of code. Internet properties powered by Cloudflare all have web traffic routed through\u2026",
-      "apply_url": "https://www.adzuna.com/details/5700066308?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-04-15T06:53:37Z",
-      "source": "adzuna",
-      "fetched_at": "2026-04-19T04:54:43.595275+00:00",
-      "status": "new",
-      "connection_flag": null,
-      "relevance_score": 50,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 50,
-      "match_reason": "Could not score",
-      "skill_matches": [],
-      "concern": ""
-    }
-  ]
+  "remaining_jobs": []
 }
