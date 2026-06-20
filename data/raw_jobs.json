@@ -1,12 +1,51 @@
 {
-  "run_date": "2026-06-19T07:13:38.261246+00:00",
+  "run_date": "2026-06-20T06:26:36.797313+00:00",
   "stats": {
-    "total_fetched": 7,
-    "new_unique": 0,
-    "viable": 0,
+    "total_fetched": 8,
+    "new_unique": 2,
+    "viable": 2,
     "cpt_flagged": 0,
-    "capped_from": 0
+    "capped_from": 2
   },
-  "viable_jobs": [],
+  "viable_jobs": [
+    {
+      "id": "994bf15ab35b",
+      "title": "Data Science Intern",
+      "company": "Medecins Sans Frontieres",
+      "location": "New York, US",
+      "description": "About MSF USA | Doctors Without Borders Doctors Without Borders/M\u00e9decins Sans Fronti\u00e8res (MSF) is an independent international organization that provides medical care to the people who need it most. The organization cares for people affected by conflict, disease outbreaks, disasters, and social exclusion in more than 70 countries. MSF offers medical humanitarian assistance solely based on need, regardless of race, ethnicity, religion, or politics. Our international project teams include medical\u2026",
+      "apply_url": "https://www.adzuna.com/details/5770118413?utm_medium=api&utm_source=5eeeff4a",
+      "apply_url_quality": "aggregator",
+      "posted_at": "2026-06-19T22:50:12Z",
+      "source": "adzuna",
+      "fetched_at": "2026-06-20T06:26:24.415139+00:00",
+      "status": "new",
+      "connection_flag": null,
+      "relevance_score": null,
+      "cpt_signal": "neutral",
+      "cpt_positive_hits": [],
+      "cpt_negative_hits": [],
+      "summer_2026_mentioned": false
+    },
+    {
+      "id": "995ae9beb8ea",
+      "title": "Consumer Insights Intern",
+      "company": "IFF",
+      "location": "New York City, New York",
+      "description": "Job Summary This internship offers hands\u2011on exposure to how consumer research is designed, executed, analyzed, and translated into actionable insights that inform innovation, marketing strategy, and commercial decision\u2011making. IFF is seeking a motivated and analytically curious Consumer Insights Summer Intern to support our Consumer Insights team. This internship offers hands\u2011on exposure to how consumer research is designed, executed, analyzed, and translated into actionable insights that infor\u2026",
+      "apply_url": "https://www.adzuna.com/details/5769231676?utm_medium=api&utm_source=5eeeff4a",
+      "apply_url_quality": "aggregator",
+      "posted_at": "2026-06-19T05:35:01Z",
+      "source": "adzuna",
+      "fetched_at": "2026-06-20T06:26:26.196324+00:00",
+      "status": "new",
+      "connection_flag": null,
+      "relevance_score": null,
+      "cpt_signal": "neutral",
+      "cpt_positive_hits": [],
+      "cpt_negative_hits": [],
+      "summer_2026_mentioned": false
+    }
+  ],
   "cpt_flagged_jobs": []
 }
