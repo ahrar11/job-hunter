@@ -1,51 +1,12 @@
 {
-  "run_date": "2026-06-21T06:56:06.716791+00:00",
+  "run_date": "2026-06-22T07:30:23.425351+00:00",
   "stats": {
     "total_fetched": 8,
-    "new_unique": 2,
-    "viable": 2,
+    "new_unique": 0,
+    "viable": 0,
     "cpt_flagged": 0,
-    "capped_from": 2
+    "capped_from": 0
   },
-  "viable_jobs": [
-    {
-      "id": "96243a1d1db0",
-      "title": "Data Analyst (Paid Intern)",
-      "company": "SD Solutions LLC",
-      "location": "Luray, Page County",
-      "description": "Position Overview We are seeking a motivated and detail-oriented Data Analyst Intern to support data analysis, reporting, and business intelligence initiatives within our government contracting operations. This paid internship provides hands-on experience working with federal contracting data, business development metrics, contract performance information, and operational reporting. The ideal candidate will possess strong analytical skills, a passion for data-driven decision-making, and a found\u2026",
-      "apply_url": "https://www.adzuna.com/details/5770881512?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-06-20T16:41:42Z",
-      "source": "adzuna",
-      "fetched_at": "2026-06-21T06:55:50.931117+00:00",
-      "status": "new",
-      "connection_flag": null,
-      "relevance_score": null,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false
-    },
-    {
-      "id": "3a7c81119d64",
-      "title": "McMullan Arts Leadership Intern, Revenue System Operations",
-      "company": "Art Institute of Chicago",
-      "location": "K-Town, Chicago",
-      "description": "The Art Institute of Chicago shares its singular collections with our city and the world. We collect, care for, and interpret works of art across time, cultures, geographies, and identities. We are a place of gathering and learning, committed to fostering an inclusive understanding of human creativity. Position Summary The Art Institute of Chicago\u2019s department of Revenue Systems Operations is excited to offer a McMullan Arts Leadership intern position to work with their ticket and admissions ad\u2026",
-      "apply_url": "https://www.adzuna.com/details/5770519546?utm_medium=api&utm_source=5eeeff4a",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-06-20T06:11:29Z",
-      "source": "adzuna",
-      "fetched_at": "2026-06-21T06:55:55.656863+00:00",
-      "status": "new",
-      "connection_flag": null,
-      "relevance_score": null,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false
-    }
-  ],
+  "viable_jobs": [],
   "cpt_flagged_jobs": []
 }
