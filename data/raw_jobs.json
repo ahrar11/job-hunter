@@ -1,5 +1,5 @@
 {
-  "run_date": "2026-07-13T05:42:28.475731+00:00",
+  "run_date": "2026-07-14T04:55:22.849582+00:00",
   "stats": {
     "total_fetched": 9,
     "new_unique": 2,
@@ -9,16 +9,16 @@
   },
   "viable_jobs": [
     {
-      "id": "70341f895b7f",
+      "id": "d603507a64de",
       "title": "Business Development Analyst Intern",
       "company": "Redstone Residential",
       "location": "Provo, Utah County",
       "description": "Redstone Residential is a national student and multi-family housing operator, managing more than 38,000 beds across 20 states. We are one of the largest third-party student housing management companies in the U.S. - and we're just getting started. Our rapidly growing conventional housing portfolio reflects our ambitious, forward-thinking approach to real estate management. Headquartered in Provo, Utah, we combine industry-leading systems with a high-energy culture to deliver exceptional propert\u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5793798833?se=evuJmH1-8RG9QpwdThZ74Q&utm_medium=api&utm_source=5eeeff4a&v=B2FE45B0C5B419A14C2A5515CAF6C0D7FDAD5F82",
+      "apply_url": "https://www.adzuna.com/land/ad/5793798833?se=nJxxL0B_8RGgn4__gUcV8g&utm_medium=api&utm_source=5eeeff4a&v=B2FE45B0C5B419A14C2A5515CAF6C0D7FDAD5F82",
       "apply_url_quality": "aggregator",
       "posted_at": "2026-07-09T01:26:52Z",
       "source": "adzuna",
-      "fetched_at": "2026-07-13T05:42:12.208847+00:00",
+      "fetched_at": "2026-07-14T04:55:07.664837+00:00",
       "status": "new",
       "connection_flag": null,
       "relevance_score": null,
@@ -28,16 +28,16 @@
       "summer_2026_mentioned": false
     },
     {
-      "id": "835752ac621c",
+      "id": "d1b8df23f024",
       "title": "Implementation Analyst, Intern",
       "company": "Smart Data Solutions LLC",
       "location": "Plano, Collin County",
       "description": "Job Description Job Description Implementation Analyst, Intern Smart Data Solutions, a leading provider of data management, claim routing and workflow solutions to health plans and TPAs, is looking for Implementation Analyst, Interns to join our team! What you\u2019ll be doing? Implementation Analysis & Solution Design Assess and document current-state customer workflows, business processes, and system usage. Conduct gap analyses to identify areas where product configuration, process changes, or cus\u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5792848104?se=qCVomX1-8RG9QpwdThZ74Q&utm_medium=api&utm_source=5eeeff4a&v=76DCFB1702EF4680D2CC3C447D526A068E3D34DF",
+      "apply_url": "https://www.adzuna.com/details/5792848104?utm_medium=api&utm_source=5eeeff4a",
       "apply_url_quality": "aggregator",
       "posted_at": "2026-07-08T12:38:08Z",
       "source": "adzuna",
-      "fetched_at": "2026-07-13T05:42:13.604400+00:00",
+      "fetched_at": "2026-07-14T04:55:08.957373+00:00",
       "status": "new",
       "connection_flag": null,
       "relevance_score": null,
