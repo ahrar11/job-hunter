@@ -1,31 +1,7 @@
 {
-  "run_date": "2026-10-17T06:45:47.393539+00:00",
-  "total_scored": 21,
+  "run_date": "2026-10-18T07:06:05.058686+00:00",
+  "total_scored": 16,
   "top_n": 20,
   "top_jobs": [],
-  "remaining_jobs": [
-    {
-      "id": "b5a157238260",
-      "title": "Sales & Customer Analytics Intern Summer 2027",
-      "company": "The Clorox Company",
-      "location": "Alameda Pt, Alameda County",
-      "description": "Full time JR23359 Clorox is the place that's committed to growth - for our people and our brands. Guided by our purpose and values, and with people at the center of everything we do, we believe every one of us can make a positive impact on consumers, communities, and teammates. Join our team. CloroxIsThePlace (https://www.linkedin.com/feed/hashtag/?keywords=cloroxistheplace&highlightedUpdateUrns=urn%3Ali%3Aactivity%3A7079847624048001024) Your role at Clorox: At Clorox, we believe our values-bas\u2026",
-      "apply_url": "https://www.adzuna.com/land/ad/5930388991?se=qkWGXfbJ8RGjutuTSb6jOA&utm_medium=api&utm_source=5eeeff4a&v=34C6F5CECEA38BC300714FAF6014EE3CA2DE545D",
-      "apply_url_quality": "aggregator",
-      "posted_at": "2026-10-16T06:58:24Z",
-      "source": "adzuna",
-      "fetched_at": "2026-10-17T06:45:39.466780+00:00",
-      "status": "new",
-      "connection_flag": null,
-      "relevance_score": 50,
-      "cpt_signal": "neutral",
-      "cpt_positive_hits": [],
-      "cpt_negative_hits": [],
-      "summer_2026_mentioned": false,
-      "raw_score": 50,
-      "match_reason": "Could not score",
-      "skill_matches": [],
-      "concern": ""
-    }
-  ]
+  "remaining_jobs": []
 }
